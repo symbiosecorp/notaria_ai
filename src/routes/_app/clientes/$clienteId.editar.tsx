@@ -26,8 +26,6 @@ function EditarClientePage() {
   const { data: cliente } = useSuspenseQuery(clienteByIdOptions(clienteId))
   const actualizar = useUpdateCliente(clienteId)
 
-  const { id: _id, createdAt: _c, updatedAt: _u, ...defaultValues } = cliente
-
   async function handleSubmit(values: ClienteInput) {
     try {
       await actualizar.mutateAsync(values)
@@ -50,7 +48,7 @@ function EditarClientePage() {
       <Card>
         <CardContent className="pt-6">
           <ClienteForm
-            defaultValues={defaultValues}
+            defaultValues={cliente}
             onSubmit={handleSubmit}
             submitting={actualizar.isPending}
             submitLabel="Guardar cambios"
