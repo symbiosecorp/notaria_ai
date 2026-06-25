@@ -58,15 +58,17 @@ export const cotizacionSchema = z.object({
 })
 export type Cotizacion = z.infer<typeof cotizacionSchema>
 
-// Lo que captura el usuario; el resto de importes los calcula el service.
+// Lo que captura el usuario; el resto de importes los calcula el service. Los
+// valores por defecto los aporta el formulario (no el schema), para que el tipo
+// de entrada del validador coincida con los datos del form en TanStack Form.
 export const cotizacionInputSchema = z.object({
   concepto: z.string().min(1, 'Describe el concepto'),
   clienteId: z.string().optional().or(z.literal('')),
   clienteNombre: z.string().optional().or(z.literal('')),
   articulo: articuloArancelEnum,
   valorOperacion: z.number().nonnegative(),
-  descuento: z.number().min(0).max(100).default(0),
-  recargo: z.number().min(0).max(100).default(0),
-  estatus: estatusCotizacionEnum.default('borrador'),
+  descuento: z.number().min(0).max(100),
+  recargo: z.number().min(0).max(100),
+  estatus: estatusCotizacionEnum,
 })
 export type CotizacionInput = z.infer<typeof cotizacionInputSchema>

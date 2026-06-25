@@ -64,10 +64,11 @@ function EditarCotizacionPage() {
             defaultValues={{
               concepto: cot.concepto,
               clienteId: cot.clienteId ?? '',
+              clienteNombre: cot.clienteNombre ?? '',
               articulo: cot.articulo,
-              valorOperacion: String(cot.valorOperacion),
-              descuento: String(cot.descuento),
-              recargo: String(cot.recargo),
+              valorOperacion: cot.valorOperacion,
+              descuento: cot.descuento,
+              recargo: cot.recargo,
               estatus: cot.estatus,
             }}
             onSubmit={handleSubmit}

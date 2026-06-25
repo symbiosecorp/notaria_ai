@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { toFieldErrors } from '#/lib/forms'
 import {
   expedienteInputSchema,
   estatusExpedienteEnum,
@@ -23,47 +24,34 @@ import {
   tipoActoEnum,
   tipoActoLabels,
 } from '../schemas'
-import type {
-  EstatusExpediente,
-  ExpedienteInput,
-  TipoActo,
-} from '../schemas'
+import type { ExpedienteInput } from '../schemas'
 
 export interface ClienteOption {
   id: string
   nombre: string
 }
 
-interface FormValues {
-  tipoActo: TipoActo
-  clienteId: string
-  descripcion: string
-  responsable: string
-  estatus: EstatusExpediente
-  fechaLimite: string
-  valorOperacion: string
-  documentos: string
-  notas: string
+const emptyValues: ExpedienteInput = {
+  tipoActo: 'compraventa',
+  descripcion: '',
+  clienteId: '',
+  clienteNombre: '',
+  responsable: '',
+  estatus: 'abierto',
+  fechaLimite: undefined,
+  documentosPendientes: [],
+  valorOperacion: undefined,
+  notas: '',
 }
 
-function buildInitial(defaults?: Partial<FormValues>): FormValues {
-  return {
-    tipoActo: 'compraventa',
-    clienteId: '',
-    descripcion: '',
-    responsable: '',
-    estatus: 'abierto',
-    fechaLimite: '',
-    valorOperacion: '',
-    documentos: '',
-    notas: '',
-    ...defaults,
-  }
+function toDateInput(value: Date | undefined): string {
+  if (!value) return ''
+  return new Date(value).toISOString().slice(0, 10)
 }
 
 export interface ExpedienteFormProps {
   clientes: ClienteOption[]
-  defaultValues?: Partial<FormValues>
+  defaultValues?: Partial<ExpedienteInput>
   onSubmit: (values: ExpedienteInput) => void | Promise<void>
   onCancel?: () => void
   submitting?: boolean
@@ -78,179 +66,207 @@ export function ExpedienteForm({
   submitting,
   submitLabel = 'Guardar',
 }: ExpedienteFormProps) {
-  const [values, setValues] = useState<FormValues>(buildInitial(defaultValues))
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  function set<TKey extends keyof FormValues>(
-    key: TKey,
-    value: FormValues[TKey],
-  ) {
-    setValues((prev) => ({ ...prev, [key]: value }))
-  }
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const cliente = clientes.find((c) => c.id === values.clienteId)
-    const payload = {
-      tipoActo: values.tipoActo,
-      clienteId: values.clienteId,
-      clienteNombre: cliente?.nombre ?? '',
-      descripcion: values.descripcion,
-      responsable: values.responsable,
-      estatus: values.estatus,
-      fechaLimite: values.fechaLimite ? new Date(values.fechaLimite) : undefined,
-      valorOperacion: values.valorOperacion
-        ? Number(values.valorOperacion)
-        : undefined,
-      documentosPendientes: values.documentos
-        .split('\n')
-        .map((d) => d.trim())
-        .filter(Boolean),
-      notas: values.notas,
-    }
-    const result = expedienteInputSchema.safeParse(payload)
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {}
-      for (const issue of result.error.issues) {
-        const key = String(issue.path[0] ?? '')
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message
-      }
-      setErrors(fieldErrors)
-      return
-    }
-    setErrors({})
-    void onSubmit(result.data)
-  }
+  const form = useForm({
+    defaultValues: { ...emptyValues, ...defaultValues },
+    validators: { onSubmit: expedienteInputSchema },
+    onSubmit: async ({ value }) => {
+      const cliente = clientes.find((c) => c.id === value.clienteId)
+      await onSubmit(
+        expedienteInputSchema.parse({
+          ...value,
+          clienteNombre: cliente?.nombre ?? '',
+        }),
+      )
+    },
+  })
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        void form.handleSubmit()
+      }}
+    >
       <FieldGroup>
         <div className="grid gap-6 md:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="tipoActo">Tipo de acto</FieldLabel>
-            <Select
-              value={values.tipoActo}
-              onValueChange={(v) => set('tipoActo', v as TipoActo)}
-            >
-              <SelectTrigger id="tipoActo">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {tipoActoEnum.options.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {tipoActoLabels[opt]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="estatus">Estatus</FieldLabel>
-            <Select
-              value={values.estatus}
-              onValueChange={(v) => set('estatus', v as EstatusExpediente)}
-            >
-              <SelectTrigger id="estatus">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {estatusExpedienteEnum.options.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {estatusExpedienteLabels[opt]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+          <form.Field name="tipoActo">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="tipoActo">Tipo de acto</FieldLabel>
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) =>
+                    field.handleChange(v as ExpedienteInput['tipoActo'])
+                  }
+                >
+                  <SelectTrigger id="tipoActo">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tipoActoEnum.options.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {tipoActoLabels[opt]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          </form.Field>
+          <form.Field name="estatus">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="estatus">Estatus</FieldLabel>
+                <Select
+                  value={field.state.value}
+                  onValueChange={(v) =>
+                    field.handleChange(v as ExpedienteInput['estatus'])
+                  }
+                >
+                  <SelectTrigger id="estatus">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estatusExpedienteEnum.options.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {estatusExpedienteLabels[opt]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+            )}
+          </form.Field>
         </div>
 
-        <Field>
-          <FieldLabel htmlFor="clienteId">Cliente</FieldLabel>
-          <Select
-            value={values.clienteId || undefined}
-            onValueChange={(v) => set('clienteId', v)}
-          >
-            <SelectTrigger id="clienteId">
-              <SelectValue placeholder="Selecciona un cliente…" />
-            </SelectTrigger>
-            <SelectContent>
-              {clientes.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError
-            errors={errors.clienteId ? [{ message: errors.clienteId }] : undefined}
-          />
-        </Field>
+        <form.Field name="clienteId">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="clienteId">Cliente</FieldLabel>
+              <Select
+                value={field.state.value || undefined}
+                onValueChange={(v) => field.handleChange(v)}
+              >
+                <SelectTrigger id="clienteId">
+                  <SelectValue placeholder="Selecciona un cliente…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+            </Field>
+          )}
+        </form.Field>
 
-        <Field>
-          <FieldLabel htmlFor="descripcion">Descripción</FieldLabel>
-          <Textarea
-            id="descripcion"
-            value={values.descripcion}
-            onChange={(e) => set('descripcion', e.target.value)}
-          />
-        </Field>
+        <form.Field name="descripcion">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="descripcion">Descripción</FieldLabel>
+              <Textarea
+                id="descripcion"
+                value={field.state.value ?? ''}
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
 
         <div className="grid gap-6 md:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="responsable">Responsable</FieldLabel>
-            <Input
-              id="responsable"
-              value={values.responsable}
-              onChange={(e) => set('responsable', e.target.value)}
-            />
-            <FieldError
-              errors={
-                errors.responsable ? [{ message: errors.responsable }] : undefined
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="fechaLimite">Fecha límite</FieldLabel>
-            <Input
-              id="fechaLimite"
-              type="date"
-              value={values.fechaLimite}
-              onChange={(e) => set('fechaLimite', e.target.value)}
-            />
-          </Field>
+          <form.Field name="responsable">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="responsable">Responsable</FieldLabel>
+                <Input
+                  id="responsable"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+                <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+              </Field>
+            )}
+          </form.Field>
+          <form.Field name="fechaLimite">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="fechaLimite">Fecha límite</FieldLabel>
+                <Input
+                  id="fechaLimite"
+                  type="date"
+                  value={toDateInput(field.state.value)}
+                  onChange={(e) =>
+                    field.handleChange(
+                      e.target.value ? new Date(e.target.value) : undefined,
+                    )
+                  }
+                />
+              </Field>
+            )}
+          </form.Field>
         </div>
 
-        <Field>
-          <FieldLabel htmlFor="valorOperacion">Valor de la operación</FieldLabel>
-          <Input
-            id="valorOperacion"
-            type="number"
-            min={0}
-            value={values.valorOperacion}
-            onChange={(e) => set('valorOperacion', e.target.value)}
-          />
-          <FieldDescription>Opcional, en pesos (MXN).</FieldDescription>
-        </Field>
+        <form.Field name="valorOperacion">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="valorOperacion">
+                Valor de la operación
+              </FieldLabel>
+              <Input
+                id="valorOperacion"
+                type="number"
+                min={0}
+                value={field.state.value ?? ''}
+                onChange={(e) =>
+                  field.handleChange(
+                    e.target.value === '' ? undefined : Number(e.target.value),
+                  )
+                }
+              />
+              <FieldDescription>Opcional, en pesos (MXN).</FieldDescription>
+            </Field>
+          )}
+        </form.Field>
 
-        <Field>
-          <FieldLabel htmlFor="documentos">Documentos pendientes</FieldLabel>
-          <Textarea
-            id="documentos"
-            value={values.documentos}
-            placeholder="Un documento por línea"
-            onChange={(e) => set('documentos', e.target.value)}
-          />
-          <FieldDescription>Escribe un documento por línea.</FieldDescription>
-        </Field>
+        <form.Field name="documentosPendientes">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="documentos">Documentos pendientes</FieldLabel>
+              <Textarea
+                id="documentos"
+                value={field.state.value.join('\n')}
+                placeholder="Un documento por línea"
+                onChange={(e) =>
+                  field.handleChange(
+                    e.target.value
+                      .split('\n')
+                      .map((d) => d.trim())
+                      .filter(Boolean),
+                  )
+                }
+              />
+              <FieldDescription>Escribe un documento por línea.</FieldDescription>
+            </Field>
+          )}
+        </form.Field>
 
-        <Field>
-          <FieldLabel htmlFor="notas">Notas</FieldLabel>
-          <Textarea
-            id="notas"
-            value={values.notas}
-            onChange={(e) => set('notas', e.target.value)}
-          />
-        </Field>
+        <form.Field name="notas">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="notas">Notas</FieldLabel>
+              <Textarea
+                id="notas"
+                value={field.state.value ?? ''}
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
 
         <div className="flex items-center gap-2">
           <Button type="submit" disabled={submitting}>

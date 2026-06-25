@@ -56,10 +56,11 @@ export const clienteSchema = z.object({
 })
 export type Cliente = z.infer<typeof clienteSchema>
 
-export const clienteInputSchema = clienteSchema
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .extend({
-    estatus: estatusClienteEnum.default('prospecto'),
-    esActividadVulnerable: z.boolean().default(false),
-  })
+// Los valores por defecto los aporta el formulario (no el schema), para que el
+// tipo de entrada del validador coincida con los datos del form en TanStack Form.
+export const clienteInputSchema = clienteSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+})
 export type ClienteInput = z.infer<typeof clienteInputSchema>

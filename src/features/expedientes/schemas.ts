@@ -75,6 +75,10 @@ export const expedienteSchema = z.object({
 })
 export type Expediente = z.infer<typeof expedienteSchema>
 
+// Los valores por defecto los aporta el formulario (no el schema), para que el
+// tipo de entrada del validador coincida con los datos del form en TanStack Form.
+// `fechaLimite` se sobrescribe a `z.date()` (el form maneja objetos Date); el
+// `z.coerce.date()` se conserva en la entidad para tolerar strings de la API.
 export const expedienteInputSchema = expedienteSchema
   .omit({
     id: true,
@@ -84,8 +88,7 @@ export const expedienteInputSchema = expedienteSchema
     updatedAt: true,
   })
   .extend({
-    estatus: estatusExpedienteEnum.default('abierto'),
-    documentosPendientes: z.array(z.string()).default([]),
+    fechaLimite: z.date().optional(),
   })
 export type ExpedienteInput = z.infer<typeof expedienteInputSchema>
 

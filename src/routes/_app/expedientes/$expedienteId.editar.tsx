@@ -28,11 +28,6 @@ export const Route = createFileRoute('/_app/expedientes/$expedienteId/editar')({
     ]),
 })
 
-function toDateInput(value: Date | undefined): string {
-  if (!value) return ''
-  return new Date(value).toISOString().slice(0, 10)
-}
-
 function EditarExpedientePage() {
   const { expedienteId } = Route.useParams()
   const navigate = useNavigate()
@@ -68,14 +63,14 @@ function EditarExpedientePage() {
             clientes={clientes.map((c) => ({ id: c.id, nombre: c.nombre }))}
             defaultValues={{
               tipoActo: exp.tipoActo,
-              clienteId: exp.clienteId,
               descripcion: exp.descripcion ?? '',
+              clienteId: exp.clienteId,
+              clienteNombre: exp.clienteNombre,
               responsable: exp.responsable,
               estatus: exp.estatus,
-              fechaLimite: toDateInput(exp.fechaLimite),
-              valorOperacion:
-                exp.valorOperacion != null ? String(exp.valorOperacion) : '',
-              documentos: exp.documentosPendientes.join('\n'),
+              fechaLimite: exp.fechaLimite,
+              documentosPendientes: exp.documentosPendientes,
+              valorOperacion: exp.valorOperacion,
               notas: exp.notas ?? '',
             }}
             onSubmit={handleSubmit}

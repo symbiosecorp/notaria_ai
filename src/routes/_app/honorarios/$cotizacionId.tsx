@@ -6,6 +6,7 @@ import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { PageHeader } from '#/components/common/page-header'
+import { ConfirmDialog } from '#/components/common/confirm-dialog'
 import { AppErrorBoundary } from '#/lib/errors/error-boundary'
 import { formatCurrency, formatDate } from '#/lib/format'
 import {
@@ -57,7 +58,6 @@ function CotizacionDetallePage() {
   const eliminar = useDeleteCotizacion()
 
   async function handleDelete() {
-    if (!window.confirm(`¿Eliminar la cotización ${cot.folio}?`)) return
     try {
       await eliminar.mutateAsync(cotizacionId)
       toast.success('Cotización eliminada')
@@ -86,14 +86,19 @@ function CotizacionDetallePage() {
             Editar
           </Link>
         </Button>
-        <Button
-          variant="destructive"
-          onClick={handleDelete}
-          disabled={eliminar.isPending}
-        >
-          <Trash2 className="size-4" />
-          Eliminar
-        </Button>
+        <ConfirmDialog
+          trigger={
+            <Button variant="destructive" disabled={eliminar.isPending}>
+              <Trash2 className="size-4" />
+              Eliminar
+            </Button>
+          }
+          title="Eliminar cotización"
+          description={`¿Eliminar la cotización ${cot.folio}? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar"
+          destructive
+          onConfirm={handleDelete}
+        />
       </PageHeader>
 
       <div className="grid gap-6 lg:grid-cols-3">

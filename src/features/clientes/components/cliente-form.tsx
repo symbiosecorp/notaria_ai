@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Textarea } from '#/components/ui/textarea'
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '#/components/ui/select'
+import { toFieldErrors } from '#/lib/forms'
 import {
   clienteInputSchema,
   estadoCivilEnum,
@@ -61,223 +62,285 @@ export function ClienteForm({
   submitting,
   submitLabel = 'Guardar',
 }: ClienteFormProps) {
-  const [values, setValues] = useState<ClienteInput>({
-    ...emptyValues,
-    ...defaultValues,
+  const form = useForm({
+    defaultValues: { ...emptyValues, ...defaultValues },
+    validators: { onSubmit: clienteInputSchema },
+    onSubmit: async ({ value }) => {
+      await onSubmit(clienteInputSchema.parse(value))
+    },
   })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  function set<TKey extends keyof ClienteInput>(
-    key: TKey,
-    value: ClienteInput[TKey],
-  ) {
-    setValues((prev) => ({ ...prev, [key]: value }))
-  }
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const result = clienteInputSchema.safeParse(values)
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {}
-      for (const issue of result.error.issues) {
-        const key = String(issue.path[0] ?? '')
-        if (key && !fieldErrors[key]) fieldErrors[key] = issue.message
-      }
-      setErrors(fieldErrors)
-      return
-    }
-    setErrors({})
-    void onSubmit(result.data)
-  }
-
-  const esFisica = values.tipoPersona === 'fisica'
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        void form.handleSubmit()
+      }}
+    >
       <FieldGroup>
         <FieldSet>
           <FieldLegend>Datos generales</FieldLegend>
           <div className="grid gap-6 md:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="tipoPersona">Tipo de persona</FieldLabel>
-              <Select
-                value={values.tipoPersona}
-                onValueChange={(v) =>
-                  set('tipoPersona', v as ClienteInput['tipoPersona'])
-                }
-              >
-                <SelectTrigger id="tipoPersona">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {tipoPersonaEnum.options.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {tipoPersonaLabels[opt]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="estatus">Estatus</FieldLabel>
-              <Select
-                value={values.estatus}
-                onValueChange={(v) =>
-                  set('estatus', v as ClienteInput['estatus'])
-                }
-              >
-                <SelectTrigger id="estatus">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {estatusClienteEnum.options.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {estatusClienteLabels[opt]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            <form.Field name="tipoPersona">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor="tipoPersona">Tipo de persona</FieldLabel>
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(v) =>
+                      field.handleChange(v as ClienteInput['tipoPersona'])
+                    }
+                  >
+                    <SelectTrigger id="tipoPersona">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tipoPersonaEnum.options.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {tipoPersonaLabels[opt]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            </form.Field>
+            <form.Field name="estatus">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor="estatus">Estatus</FieldLabel>
+                  <Select
+                    value={field.state.value}
+                    onValueChange={(v) =>
+                      field.handleChange(v as ClienteInput['estatus'])
+                    }
+                  >
+                    <SelectTrigger id="estatus">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {estatusClienteEnum.options.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {estatusClienteLabels[opt]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+            </form.Field>
           </div>
-          <Field>
-            <FieldLabel htmlFor="nombre">
-              {esFisica ? 'Nombre completo' : 'Razón social'}
-            </FieldLabel>
-            <Input
-              id="nombre"
-              value={values.nombre}
-              onChange={(e) => set('nombre', e.target.value)}
-            />
-            <FieldError errors={errors.nombre ? [{ message: errors.nombre }] : undefined} />
-          </Field>
+
+          <form.Subscribe selector={(s) => s.values.tipoPersona}>
+            {(tipoPersona) => (
+              <form.Field name="nombre">
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor="nombre">
+                      {tipoPersona === 'fisica'
+                        ? 'Nombre completo'
+                        : 'Razón social'}
+                    </FieldLabel>
+                    <Input
+                      id="nombre"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+                  </Field>
+                )}
+              </form.Field>
+            )}
+          </form.Subscribe>
+
           <div className="grid gap-6 md:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="rfc">RFC</FieldLabel>
-              <Input
-                id="rfc"
-                value={values.rfc ?? ''}
-                onChange={(e) => set('rfc', e.target.value.toUpperCase())}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="telefono">Teléfono</FieldLabel>
-              <Input
-                id="telefono"
-                value={values.telefono ?? ''}
-                onChange={(e) => set('telefono', e.target.value)}
-              />
-            </Field>
+            <form.Field name="rfc">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor="rfc">RFC</FieldLabel>
+                  <Input
+                    id="rfc"
+                    value={field.state.value ?? ''}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value.toUpperCase())
+                    }
+                  />
+                </Field>
+              )}
+            </form.Field>
+            <form.Field name="telefono">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor="telefono">Teléfono</FieldLabel>
+                  <Input
+                    id="telefono"
+                    value={field.state.value ?? ''}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </Field>
+              )}
+            </form.Field>
           </div>
-          <Field>
-            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              value={values.email ?? ''}
-              onChange={(e) => set('email', e.target.value)}
-            />
-            <FieldError errors={errors.email ? [{ message: errors.email }] : undefined} />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="domicilio">Domicilio</FieldLabel>
-            <Textarea
-              id="domicilio"
-              value={values.domicilio ?? ''}
-              onChange={(e) => set('domicilio', e.target.value)}
-            />
-          </Field>
+
+          <form.Field name="email">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+                <Input
+                  id="email"
+                  type="email"
+                  value={field.state.value ?? ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+                <FieldError errors={toFieldErrors(field.state.meta.errors)} />
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="domicilio">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="domicilio">Domicilio</FieldLabel>
+                <Textarea
+                  id="domicilio"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
         </FieldSet>
 
-        {esFisica ? (
-          <FieldSet>
-            <FieldLegend>Persona física</FieldLegend>
-            <div className="grid gap-6 md:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor="curp">CURP</FieldLabel>
-                <Input
-                  id="curp"
-                  value={values.curp ?? ''}
-                  onChange={(e) => set('curp', e.target.value.toUpperCase())}
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="nacionalidad">Nacionalidad</FieldLabel>
-                <Input
-                  id="nacionalidad"
-                  value={values.nacionalidad ?? ''}
-                  onChange={(e) => set('nacionalidad', e.target.value)}
-                />
-              </Field>
-            </div>
-            <Field>
-              <FieldLabel htmlFor="estadoCivil">Estado civil</FieldLabel>
-              <Select
-                value={values.estadoCivil}
-                onValueChange={(v) =>
-                  set('estadoCivil', v as ClienteInput['estadoCivil'])
-                }
-              >
-                <SelectTrigger id="estadoCivil">
-                  <SelectValue placeholder="Selecciona…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {estadoCivilEnum.options.map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {estadoCivilLabels[opt]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </FieldSet>
-        ) : (
-          <FieldSet>
-            <FieldLegend>Persona moral</FieldLegend>
-            <Field>
-              <FieldLabel htmlFor="representanteLegal">
-                Representante legal
-              </FieldLabel>
-              <Input
-                id="representanteLegal"
-                value={values.representanteLegal ?? ''}
-                onChange={(e) => set('representanteLegal', e.target.value)}
-              />
-            </Field>
-          </FieldSet>
-        )}
+        <form.Subscribe selector={(s) => s.values.tipoPersona}>
+          {(tipoPersona) =>
+            tipoPersona === 'fisica' ? (
+              <FieldSet>
+                <FieldLegend>Persona física</FieldLegend>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <form.Field name="curp">
+                    {(field) => (
+                      <Field>
+                        <FieldLabel htmlFor="curp">CURP</FieldLabel>
+                        <Input
+                          id="curp"
+                          value={field.state.value ?? ''}
+                          onChange={(e) =>
+                            field.handleChange(e.target.value.toUpperCase())
+                          }
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+                  <form.Field name="nacionalidad">
+                    {(field) => (
+                      <Field>
+                        <FieldLabel htmlFor="nacionalidad">
+                          Nacionalidad
+                        </FieldLabel>
+                        <Input
+                          id="nacionalidad"
+                          value={field.state.value ?? ''}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                      </Field>
+                    )}
+                  </form.Field>
+                </div>
+                <form.Field name="estadoCivil">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="estadoCivil">Estado civil</FieldLabel>
+                      <Select
+                        value={field.state.value}
+                        onValueChange={(v) =>
+                          field.handleChange(v as ClienteInput['estadoCivil'])
+                        }
+                      >
+                        <SelectTrigger id="estadoCivil">
+                          <SelectValue placeholder="Selecciona…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {estadoCivilEnum.options.map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {estadoCivilLabels[opt]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  )}
+                </form.Field>
+              </FieldSet>
+            ) : (
+              <FieldSet>
+                <FieldLegend>Persona moral</FieldLegend>
+                <form.Field name="representanteLegal">
+                  {(field) => (
+                    <Field>
+                      <FieldLabel htmlFor="representanteLegal">
+                        Representante legal
+                      </FieldLabel>
+                      <Input
+                        id="representanteLegal"
+                        value={field.state.value ?? ''}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </Field>
+                  )}
+                </form.Field>
+              </FieldSet>
+            )
+          }
+        </form.Subscribe>
 
         <FieldSet>
           <FieldLegend>Cumplimiento UIF / PLD</FieldLegend>
-          <Field>
-            <FieldLabel htmlFor="beneficiarioControlador">
-              Beneficiario controlador
-            </FieldLabel>
-            <Input
-              id="beneficiarioControlador"
-              value={values.beneficiarioControlador ?? ''}
-              onChange={(e) => set('beneficiarioControlador', e.target.value)}
-            />
-          </Field>
-          <Field orientation="horizontal">
-            <Switch
-              id="esActividadVulnerable"
-              checked={values.esActividadVulnerable}
-              onCheckedChange={(v) => set('esActividadVulnerable', v)}
-            />
-            <FieldLabel htmlFor="esActividadVulnerable">
-              Involucra actividad vulnerable
-            </FieldLabel>
-          </Field>
+          <form.Field name="beneficiarioControlador">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="beneficiarioControlador">
+                  Beneficiario controlador
+                </FieldLabel>
+                <Input
+                  id="beneficiarioControlador"
+                  value={field.state.value ?? ''}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+          <form.Field name="esActividadVulnerable">
+            {(field) => (
+              <Field orientation="horizontal">
+                <Switch
+                  id="esActividadVulnerable"
+                  checked={field.state.value}
+                  onCheckedChange={(v) => field.handleChange(v)}
+                />
+                <FieldLabel htmlFor="esActividadVulnerable">
+                  Involucra actividad vulnerable
+                </FieldLabel>
+              </Field>
+            )}
+          </form.Field>
         </FieldSet>
 
-        <Field>
-          <FieldLabel htmlFor="notas">Notas</FieldLabel>
-          <Textarea
-            id="notas"
-            value={values.notas ?? ''}
-            onChange={(e) => set('notas', e.target.value)}
-          />
-        </Field>
+        <form.Field name="notas">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="notas">Notas</FieldLabel>
+              <Textarea
+                id="notas"
+                value={field.state.value ?? ''}
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            </Field>
+          )}
+        </form.Field>
 
         <div className="flex items-center gap-2">
           <Button type="submit" disabled={submitting}>
