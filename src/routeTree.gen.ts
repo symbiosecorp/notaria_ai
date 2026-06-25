@@ -18,16 +18,22 @@ import { Route as AppUifRouteImport } from './routes/_app/uif'
 import { Route as AppReportesRouteImport } from './routes/_app/reportes'
 import { Route as AppRegistroPublicoRouteImport } from './routes/_app/registro-publico'
 import { Route as AppIaRouteImport } from './routes/_app/ia'
-import { Route as AppHonorariosRouteImport } from './routes/_app/honorarios'
 import { Route as AppFiscalRouteImport } from './routes/_app/fiscal'
-import { Route as AppExpedientesRouteImport } from './routes/_app/expedientes'
 import { Route as AppDocumentalRouteImport } from './routes/_app/documental'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppConfiguracionRouteImport } from './routes/_app/configuracion'
 import { Route as AppAgendaRouteImport } from './routes/_app/agenda'
+import { Route as AppHonorariosIndexRouteImport } from './routes/_app/honorarios/index'
+import { Route as AppExpedientesIndexRouteImport } from './routes/_app/expedientes/index'
 import { Route as AppClientesIndexRouteImport } from './routes/_app/clientes/index'
+import { Route as AppHonorariosNuevaRouteImport } from './routes/_app/honorarios/nueva'
+import { Route as AppHonorariosCotizacionIdRouteImport } from './routes/_app/honorarios/$cotizacionId'
+import { Route as AppExpedientesNuevoRouteImport } from './routes/_app/expedientes/nuevo'
+import { Route as AppExpedientesExpedienteIdRouteImport } from './routes/_app/expedientes/$expedienteId'
 import { Route as AppClientesNuevoRouteImport } from './routes/_app/clientes/nuevo'
 import { Route as AppClientesClienteIdRouteImport } from './routes/_app/clientes/$clienteId'
+import { Route as AppHonorariosCotizacionIdEditarRouteImport } from './routes/_app/honorarios/$cotizacionId.editar'
+import { Route as AppExpedientesExpedienteIdEditarRouteImport } from './routes/_app/expedientes/$expedienteId.editar'
 import { Route as AppClientesClienteIdEditarRouteImport } from './routes/_app/clientes/$clienteId.editar'
 
 const AuthRoute = AuthRouteImport.update({
@@ -73,19 +79,9 @@ const AppIaRoute = AppIaRouteImport.update({
   path: '/ia',
   getParentRoute: () => AppRoute,
 } as any)
-const AppHonorariosRoute = AppHonorariosRouteImport.update({
-  id: '/honorarios',
-  path: '/honorarios',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppFiscalRoute = AppFiscalRouteImport.update({
   id: '/fiscal',
   path: '/fiscal',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppExpedientesRoute = AppExpedientesRouteImport.update({
-  id: '/expedientes',
-  path: '/expedientes',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentalRoute = AppDocumentalRouteImport.update({
@@ -108,11 +104,43 @@ const AppAgendaRoute = AppAgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHonorariosIndexRoute = AppHonorariosIndexRouteImport.update({
+  id: '/honorarios/',
+  path: '/honorarios/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpedientesIndexRoute = AppExpedientesIndexRouteImport.update({
+  id: '/expedientes/',
+  path: '/expedientes/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppClientesIndexRoute = AppClientesIndexRouteImport.update({
   id: '/clientes/',
   path: '/clientes/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHonorariosNuevaRoute = AppHonorariosNuevaRouteImport.update({
+  id: '/honorarios/nueva',
+  path: '/honorarios/nueva',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHonorariosCotizacionIdRoute =
+  AppHonorariosCotizacionIdRouteImport.update({
+    id: '/honorarios/$cotizacionId',
+    path: '/honorarios/$cotizacionId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppExpedientesNuevoRoute = AppExpedientesNuevoRouteImport.update({
+  id: '/expedientes/nuevo',
+  path: '/expedientes/nuevo',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpedientesExpedienteIdRoute =
+  AppExpedientesExpedienteIdRouteImport.update({
+    id: '/expedientes/$expedienteId',
+    path: '/expedientes/$expedienteId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppClientesNuevoRoute = AppClientesNuevoRouteImport.update({
   id: '/clientes/nuevo',
   path: '/clientes/nuevo',
@@ -123,6 +151,18 @@ const AppClientesClienteIdRoute = AppClientesClienteIdRouteImport.update({
   path: '/clientes/$clienteId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHonorariosCotizacionIdEditarRoute =
+  AppHonorariosCotizacionIdEditarRouteImport.update({
+    id: '/editar',
+    path: '/editar',
+    getParentRoute: () => AppHonorariosCotizacionIdRoute,
+  } as any)
+const AppExpedientesExpedienteIdEditarRoute =
+  AppExpedientesExpedienteIdEditarRouteImport.update({
+    id: '/editar',
+    path: '/editar',
+    getParentRoute: () => AppExpedientesExpedienteIdRoute,
+  } as any)
 const AppClientesClienteIdEditarRoute =
   AppClientesClienteIdEditarRouteImport.update({
     id: '/editar',
@@ -136,9 +176,7 @@ export interface FileRoutesByFullPath {
   '/configuracion': typeof AppConfiguracionRoute
   '/dashboard': typeof AppDashboardRoute
   '/documental': typeof AppDocumentalRoute
-  '/expedientes': typeof AppExpedientesRoute
   '/fiscal': typeof AppFiscalRoute
-  '/honorarios': typeof AppHonorariosRoute
   '/ia': typeof AppIaRoute
   '/registro-publico': typeof AppRegistroPublicoRoute
   '/reportes': typeof AppReportesRoute
@@ -147,8 +185,16 @@ export interface FileRoutesByFullPath {
   '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/clientes/nuevo': typeof AppClientesNuevoRoute
+  '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
+  '/expedientes/nuevo': typeof AppExpedientesNuevoRoute
+  '/honorarios/$cotizacionId': typeof AppHonorariosCotizacionIdRouteWithChildren
+  '/honorarios/nueva': typeof AppHonorariosNuevaRoute
   '/clientes/': typeof AppClientesIndexRoute
+  '/expedientes/': typeof AppExpedientesIndexRoute
+  '/honorarios/': typeof AppHonorariosIndexRoute
   '/clientes/$clienteId/editar': typeof AppClientesClienteIdEditarRoute
+  '/expedientes/$expedienteId/editar': typeof AppExpedientesExpedienteIdEditarRoute
+  '/honorarios/$cotizacionId/editar': typeof AppHonorariosCotizacionIdEditarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,9 +202,7 @@ export interface FileRoutesByTo {
   '/configuracion': typeof AppConfiguracionRoute
   '/dashboard': typeof AppDashboardRoute
   '/documental': typeof AppDocumentalRoute
-  '/expedientes': typeof AppExpedientesRoute
   '/fiscal': typeof AppFiscalRoute
-  '/honorarios': typeof AppHonorariosRoute
   '/ia': typeof AppIaRoute
   '/registro-publico': typeof AppRegistroPublicoRoute
   '/reportes': typeof AppReportesRoute
@@ -167,8 +211,16 @@ export interface FileRoutesByTo {
   '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/clientes/nuevo': typeof AppClientesNuevoRoute
+  '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
+  '/expedientes/nuevo': typeof AppExpedientesNuevoRoute
+  '/honorarios/$cotizacionId': typeof AppHonorariosCotizacionIdRouteWithChildren
+  '/honorarios/nueva': typeof AppHonorariosNuevaRoute
   '/clientes': typeof AppClientesIndexRoute
+  '/expedientes': typeof AppExpedientesIndexRoute
+  '/honorarios': typeof AppHonorariosIndexRoute
   '/clientes/$clienteId/editar': typeof AppClientesClienteIdEditarRoute
+  '/expedientes/$expedienteId/editar': typeof AppExpedientesExpedienteIdEditarRoute
+  '/honorarios/$cotizacionId/editar': typeof AppHonorariosCotizacionIdEditarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -179,9 +231,7 @@ export interface FileRoutesById {
   '/_app/configuracion': typeof AppConfiguracionRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documental': typeof AppDocumentalRoute
-  '/_app/expedientes': typeof AppExpedientesRoute
   '/_app/fiscal': typeof AppFiscalRoute
-  '/_app/honorarios': typeof AppHonorariosRoute
   '/_app/ia': typeof AppIaRoute
   '/_app/registro-publico': typeof AppRegistroPublicoRoute
   '/_app/reportes': typeof AppReportesRoute
@@ -190,8 +240,16 @@ export interface FileRoutesById {
   '/_auth/registro': typeof AuthRegistroRoute
   '/_app/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/_app/clientes/nuevo': typeof AppClientesNuevoRoute
+  '/_app/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
+  '/_app/expedientes/nuevo': typeof AppExpedientesNuevoRoute
+  '/_app/honorarios/$cotizacionId': typeof AppHonorariosCotizacionIdRouteWithChildren
+  '/_app/honorarios/nueva': typeof AppHonorariosNuevaRoute
   '/_app/clientes/': typeof AppClientesIndexRoute
+  '/_app/expedientes/': typeof AppExpedientesIndexRoute
+  '/_app/honorarios/': typeof AppHonorariosIndexRoute
   '/_app/clientes/$clienteId/editar': typeof AppClientesClienteIdEditarRoute
+  '/_app/expedientes/$expedienteId/editar': typeof AppExpedientesExpedienteIdEditarRoute
+  '/_app/honorarios/$cotizacionId/editar': typeof AppHonorariosCotizacionIdEditarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -201,9 +259,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/documental'
-    | '/expedientes'
     | '/fiscal'
-    | '/honorarios'
     | '/ia'
     | '/registro-publico'
     | '/reportes'
@@ -212,8 +268,16 @@ export interface FileRouteTypes {
     | '/registro'
     | '/clientes/$clienteId'
     | '/clientes/nuevo'
+    | '/expedientes/$expedienteId'
+    | '/expedientes/nuevo'
+    | '/honorarios/$cotizacionId'
+    | '/honorarios/nueva'
     | '/clientes/'
+    | '/expedientes/'
+    | '/honorarios/'
     | '/clientes/$clienteId/editar'
+    | '/expedientes/$expedienteId/editar'
+    | '/honorarios/$cotizacionId/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -221,9 +285,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/dashboard'
     | '/documental'
-    | '/expedientes'
     | '/fiscal'
-    | '/honorarios'
     | '/ia'
     | '/registro-publico'
     | '/reportes'
@@ -232,8 +294,16 @@ export interface FileRouteTypes {
     | '/registro'
     | '/clientes/$clienteId'
     | '/clientes/nuevo'
+    | '/expedientes/$expedienteId'
+    | '/expedientes/nuevo'
+    | '/honorarios/$cotizacionId'
+    | '/honorarios/nueva'
     | '/clientes'
+    | '/expedientes'
+    | '/honorarios'
     | '/clientes/$clienteId/editar'
+    | '/expedientes/$expedienteId/editar'
+    | '/honorarios/$cotizacionId/editar'
   id:
     | '__root__'
     | '/'
@@ -243,9 +313,7 @@ export interface FileRouteTypes {
     | '/_app/configuracion'
     | '/_app/dashboard'
     | '/_app/documental'
-    | '/_app/expedientes'
     | '/_app/fiscal'
-    | '/_app/honorarios'
     | '/_app/ia'
     | '/_app/registro-publico'
     | '/_app/reportes'
@@ -254,8 +322,16 @@ export interface FileRouteTypes {
     | '/_auth/registro'
     | '/_app/clientes/$clienteId'
     | '/_app/clientes/nuevo'
+    | '/_app/expedientes/$expedienteId'
+    | '/_app/expedientes/nuevo'
+    | '/_app/honorarios/$cotizacionId'
+    | '/_app/honorarios/nueva'
     | '/_app/clientes/'
+    | '/_app/expedientes/'
+    | '/_app/honorarios/'
     | '/_app/clientes/$clienteId/editar'
+    | '/_app/expedientes/$expedienteId/editar'
+    | '/_app/honorarios/$cotizacionId/editar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -329,25 +405,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIaRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/honorarios': {
-      id: '/_app/honorarios'
-      path: '/honorarios'
-      fullPath: '/honorarios'
-      preLoaderRoute: typeof AppHonorariosRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/fiscal': {
       id: '/_app/fiscal'
       path: '/fiscal'
       fullPath: '/fiscal'
       preLoaderRoute: typeof AppFiscalRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/expedientes': {
-      id: '/_app/expedientes'
-      path: '/expedientes'
-      fullPath: '/expedientes'
-      preLoaderRoute: typeof AppExpedientesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/documental': {
@@ -378,11 +440,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAgendaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/honorarios/': {
+      id: '/_app/honorarios/'
+      path: '/honorarios'
+      fullPath: '/honorarios/'
+      preLoaderRoute: typeof AppHonorariosIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expedientes/': {
+      id: '/_app/expedientes/'
+      path: '/expedientes'
+      fullPath: '/expedientes/'
+      preLoaderRoute: typeof AppExpedientesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/clientes/': {
       id: '/_app/clientes/'
       path: '/clientes'
       fullPath: '/clientes/'
       preLoaderRoute: typeof AppClientesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/honorarios/nueva': {
+      id: '/_app/honorarios/nueva'
+      path: '/honorarios/nueva'
+      fullPath: '/honorarios/nueva'
+      preLoaderRoute: typeof AppHonorariosNuevaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/honorarios/$cotizacionId': {
+      id: '/_app/honorarios/$cotizacionId'
+      path: '/honorarios/$cotizacionId'
+      fullPath: '/honorarios/$cotizacionId'
+      preLoaderRoute: typeof AppHonorariosCotizacionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expedientes/nuevo': {
+      id: '/_app/expedientes/nuevo'
+      path: '/expedientes/nuevo'
+      fullPath: '/expedientes/nuevo'
+      preLoaderRoute: typeof AppExpedientesNuevoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expedientes/$expedienteId': {
+      id: '/_app/expedientes/$expedienteId'
+      path: '/expedientes/$expedienteId'
+      fullPath: '/expedientes/$expedienteId'
+      preLoaderRoute: typeof AppExpedientesExpedienteIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/clientes/nuevo': {
@@ -398,6 +502,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/clientes/$clienteId'
       preLoaderRoute: typeof AppClientesClienteIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/honorarios/$cotizacionId/editar': {
+      id: '/_app/honorarios/$cotizacionId/editar'
+      path: '/editar'
+      fullPath: '/honorarios/$cotizacionId/editar'
+      preLoaderRoute: typeof AppHonorariosCotizacionIdEditarRouteImport
+      parentRoute: typeof AppHonorariosCotizacionIdRoute
+    }
+    '/_app/expedientes/$expedienteId/editar': {
+      id: '/_app/expedientes/$expedienteId/editar'
+      path: '/editar'
+      fullPath: '/expedientes/$expedienteId/editar'
+      preLoaderRoute: typeof AppExpedientesExpedienteIdEditarRouteImport
+      parentRoute: typeof AppExpedientesExpedienteIdRoute
     }
     '/_app/clientes/$clienteId/editar': {
       id: '/_app/clientes/$clienteId/editar'
@@ -420,21 +538,54 @@ const AppClientesClienteIdRouteChildren: AppClientesClienteIdRouteChildren = {
 const AppClientesClienteIdRouteWithChildren =
   AppClientesClienteIdRoute._addFileChildren(AppClientesClienteIdRouteChildren)
 
+interface AppExpedientesExpedienteIdRouteChildren {
+  AppExpedientesExpedienteIdEditarRoute: typeof AppExpedientesExpedienteIdEditarRoute
+}
+
+const AppExpedientesExpedienteIdRouteChildren: AppExpedientesExpedienteIdRouteChildren =
+  {
+    AppExpedientesExpedienteIdEditarRoute:
+      AppExpedientesExpedienteIdEditarRoute,
+  }
+
+const AppExpedientesExpedienteIdRouteWithChildren =
+  AppExpedientesExpedienteIdRoute._addFileChildren(
+    AppExpedientesExpedienteIdRouteChildren,
+  )
+
+interface AppHonorariosCotizacionIdRouteChildren {
+  AppHonorariosCotizacionIdEditarRoute: typeof AppHonorariosCotizacionIdEditarRoute
+}
+
+const AppHonorariosCotizacionIdRouteChildren: AppHonorariosCotizacionIdRouteChildren =
+  {
+    AppHonorariosCotizacionIdEditarRoute: AppHonorariosCotizacionIdEditarRoute,
+  }
+
+const AppHonorariosCotizacionIdRouteWithChildren =
+  AppHonorariosCotizacionIdRoute._addFileChildren(
+    AppHonorariosCotizacionIdRouteChildren,
+  )
+
 interface AppRouteChildren {
   AppAgendaRoute: typeof AppAgendaRoute
   AppConfiguracionRoute: typeof AppConfiguracionRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentalRoute: typeof AppDocumentalRoute
-  AppExpedientesRoute: typeof AppExpedientesRoute
   AppFiscalRoute: typeof AppFiscalRoute
-  AppHonorariosRoute: typeof AppHonorariosRoute
   AppIaRoute: typeof AppIaRoute
   AppRegistroPublicoRoute: typeof AppRegistroPublicoRoute
   AppReportesRoute: typeof AppReportesRoute
   AppUifRoute: typeof AppUifRoute
   AppClientesClienteIdRoute: typeof AppClientesClienteIdRouteWithChildren
   AppClientesNuevoRoute: typeof AppClientesNuevoRoute
+  AppExpedientesExpedienteIdRoute: typeof AppExpedientesExpedienteIdRouteWithChildren
+  AppExpedientesNuevoRoute: typeof AppExpedientesNuevoRoute
+  AppHonorariosCotizacionIdRoute: typeof AppHonorariosCotizacionIdRouteWithChildren
+  AppHonorariosNuevaRoute: typeof AppHonorariosNuevaRoute
   AppClientesIndexRoute: typeof AppClientesIndexRoute
+  AppExpedientesIndexRoute: typeof AppExpedientesIndexRoute
+  AppHonorariosIndexRoute: typeof AppHonorariosIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -442,16 +593,20 @@ const AppRouteChildren: AppRouteChildren = {
   AppConfiguracionRoute: AppConfiguracionRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentalRoute: AppDocumentalRoute,
-  AppExpedientesRoute: AppExpedientesRoute,
   AppFiscalRoute: AppFiscalRoute,
-  AppHonorariosRoute: AppHonorariosRoute,
   AppIaRoute: AppIaRoute,
   AppRegistroPublicoRoute: AppRegistroPublicoRoute,
   AppReportesRoute: AppReportesRoute,
   AppUifRoute: AppUifRoute,
   AppClientesClienteIdRoute: AppClientesClienteIdRouteWithChildren,
   AppClientesNuevoRoute: AppClientesNuevoRoute,
+  AppExpedientesExpedienteIdRoute: AppExpedientesExpedienteIdRouteWithChildren,
+  AppExpedientesNuevoRoute: AppExpedientesNuevoRoute,
+  AppHonorariosCotizacionIdRoute: AppHonorariosCotizacionIdRouteWithChildren,
+  AppHonorariosNuevaRoute: AppHonorariosNuevaRoute,
   AppClientesIndexRoute: AppClientesIndexRoute,
+  AppExpedientesIndexRoute: AppExpedientesIndexRoute,
+  AppHonorariosIndexRoute: AppHonorariosIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

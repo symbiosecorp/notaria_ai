@@ -67,7 +67,10 @@ export function ClienteForm({
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  function set<K extends keyof ClienteInput>(key: K, value: ClienteInput[K]) {
+  function set<TKey extends keyof ClienteInput>(
+    key: TKey,
+    value: ClienteInput[TKey],
+  ) {
     setValues((prev) => ({ ...prev, [key]: value }))
   }
 

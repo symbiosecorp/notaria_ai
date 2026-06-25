@@ -11,12 +11,8 @@ import { Badge } from '#/components/ui/badge'
 import { Skeleton } from '#/components/ui/skeleton'
 import { EmptyState } from '#/components/common/empty-state'
 import { formatDate } from '#/lib/format'
-import {
-  estatusExpedienteLabels,
-  tipoActoLabels,
-  type Expediente,
-  type EstatusExpediente,
-} from '../schemas'
+import { estatusExpedienteLabels, tipoActoLabels } from '../schemas'
+import type { Expediente, EstatusExpediente } from '../schemas'
 
 export const estatusExpedienteVariant: Record<
   EstatusExpediente,

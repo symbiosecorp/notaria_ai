@@ -80,7 +80,10 @@ export function CotizacionForm({
   const [values, setValues] = useState<FormValues>(buildInitial(defaultValues))
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  function set<K extends keyof FormValues>(key: K, value: FormValues[K]) {
+  function set<TKey extends keyof FormValues>(
+    key: TKey,
+    value: FormValues[TKey],
+  ) {
     setValues((prev) => ({ ...prev, [key]: value }))
   }
 

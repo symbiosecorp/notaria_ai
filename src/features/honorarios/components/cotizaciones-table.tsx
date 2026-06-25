@@ -11,12 +11,8 @@ import { Badge } from '#/components/ui/badge'
 import { Skeleton } from '#/components/ui/skeleton'
 import { EmptyState } from '#/components/common/empty-state'
 import { formatCurrency } from '#/lib/format'
-import {
-  articuloArancelLabels,
-  estatusCotizacionLabels,
-  type Cotizacion,
-  type EstatusCotizacion,
-} from '../schemas'
+import { articuloArancelLabels, estatusCotizacionLabels } from '../schemas'
+import type { Cotizacion, EstatusCotizacion } from '../schemas'
 
 export const estatusCotizacionVariant: Record<
   EstatusCotizacion,
