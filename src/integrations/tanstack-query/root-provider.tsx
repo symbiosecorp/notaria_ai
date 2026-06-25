@@ -1,10 +1,11 @@
-import { QueryClient } from '@tanstack/react-query'
+import { createQueryClient } from '#/lib/api/query-client'
 
 export function getContext() {
-  const queryClient = new QueryClient()
-
   return {
-    queryClient,
+    queryClient: createQueryClient(),
   }
 }
-export default function TanstackQueryProvider() {}
+
+export default function TanstackQueryProvider() {
+  return null
+}

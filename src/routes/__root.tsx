@@ -9,11 +9,15 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
+import { APP_DESCRIPTION, APP_NAME } from '#/lib/config/app'
+import { TooltipProvider } from '#/components/ui/tooltip'
 
 import type { QueryClient } from '@tanstack/react-query'
+import type { auth } from '#/stores/auth-store'
 
 interface MyRouterContext {
   queryClient: QueryClient
+  auth: typeof auth
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
@@ -27,7 +31,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: APP_NAME,
+      },
+      {
+        name: 'description',
+        content: APP_DESCRIPTION,
       },
     ],
     links: [
@@ -42,12 +50,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="es">
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <TooltipProvider delayDuration={0}>
+          {children}
+        </TooltipProvider>
         <TanStackDevtools
           config={{
             position: 'bottom-right',

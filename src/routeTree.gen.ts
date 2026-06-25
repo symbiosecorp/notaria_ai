@@ -9,38 +9,252 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRegistroRouteImport } from './routes/_auth/registro'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppUifRouteImport } from './routes/_app/uif'
+import { Route as AppReportesRouteImport } from './routes/_app/reportes'
+import { Route as AppRegistroPublicoRouteImport } from './routes/_app/registro-publico'
+import { Route as AppIaRouteImport } from './routes/_app/ia'
+import { Route as AppHonorariosRouteImport } from './routes/_app/honorarios'
+import { Route as AppFiscalRouteImport } from './routes/_app/fiscal'
+import { Route as AppExpedientesRouteImport } from './routes/_app/expedientes'
+import { Route as AppDocumentalRouteImport } from './routes/_app/documental'
+import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
+import { Route as AppConfiguracionRouteImport } from './routes/_app/configuracion'
+import { Route as AppAgendaRouteImport } from './routes/_app/agenda'
+import { Route as AppClientesIndexRouteImport } from './routes/_app/clientes/index'
+import { Route as AppClientesClienteIdRouteImport } from './routes/_app/clientes/$clienteId'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRegistroRoute = AuthRegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AppUifRoute = AppUifRouteImport.update({
+  id: '/uif',
+  path: '/uif',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportesRoute = AppReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRegistroPublicoRoute = AppRegistroPublicoRouteImport.update({
+  id: '/registro-publico',
+  path: '/registro-publico',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIaRoute = AppIaRouteImport.update({
+  id: '/ia',
+  path: '/ia',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppHonorariosRoute = AppHonorariosRouteImport.update({
+  id: '/honorarios',
+  path: '/honorarios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFiscalRoute = AppFiscalRouteImport.update({
+  id: '/fiscal',
+  path: '/fiscal',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppExpedientesRoute = AppExpedientesRouteImport.update({
+  id: '/expedientes',
+  path: '/expedientes',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDocumentalRoute = AppDocumentalRouteImport.update({
+  id: '/documental',
+  path: '/documental',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppConfiguracionRoute = AppConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAgendaRoute = AppAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientesIndexRoute = AppClientesIndexRouteImport.update({
+  id: '/clientes/',
+  path: '/clientes/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClientesClienteIdRoute = AppClientesClienteIdRouteImport.update({
+  id: '/clientes/$clienteId',
+  path: '/clientes/$clienteId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agenda': typeof AppAgendaRoute
+  '/configuracion': typeof AppConfiguracionRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/documental': typeof AppDocumentalRoute
+  '/expedientes': typeof AppExpedientesRoute
+  '/fiscal': typeof AppFiscalRoute
+  '/honorarios': typeof AppHonorariosRoute
+  '/ia': typeof AppIaRoute
+  '/registro-publico': typeof AppRegistroPublicoRoute
+  '/reportes': typeof AppReportesRoute
+  '/uif': typeof AppUifRoute
+  '/login': typeof AuthLoginRoute
+  '/registro': typeof AuthRegistroRoute
+  '/clientes/$clienteId': typeof AppClientesClienteIdRoute
+  '/clientes/': typeof AppClientesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agenda': typeof AppAgendaRoute
+  '/configuracion': typeof AppConfiguracionRoute
+  '/dashboard': typeof AppDashboardRoute
+  '/documental': typeof AppDocumentalRoute
+  '/expedientes': typeof AppExpedientesRoute
+  '/fiscal': typeof AppFiscalRoute
+  '/honorarios': typeof AppHonorariosRoute
+  '/ia': typeof AppIaRoute
+  '/registro-publico': typeof AppRegistroPublicoRoute
+  '/reportes': typeof AppReportesRoute
+  '/uif': typeof AppUifRoute
+  '/login': typeof AuthLoginRoute
+  '/registro': typeof AuthRegistroRoute
+  '/clientes/$clienteId': typeof AppClientesClienteIdRoute
+  '/clientes': typeof AppClientesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/_auth': typeof AuthRouteWithChildren
+  '/_app/agenda': typeof AppAgendaRoute
+  '/_app/configuracion': typeof AppConfiguracionRoute
+  '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/documental': typeof AppDocumentalRoute
+  '/_app/expedientes': typeof AppExpedientesRoute
+  '/_app/fiscal': typeof AppFiscalRoute
+  '/_app/honorarios': typeof AppHonorariosRoute
+  '/_app/ia': typeof AppIaRoute
+  '/_app/registro-publico': typeof AppRegistroPublicoRoute
+  '/_app/reportes': typeof AppReportesRoute
+  '/_app/uif': typeof AppUifRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/registro': typeof AuthRegistroRoute
+  '/_app/clientes/$clienteId': typeof AppClientesClienteIdRoute
+  '/_app/clientes/': typeof AppClientesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/agenda'
+    | '/configuracion'
+    | '/dashboard'
+    | '/documental'
+    | '/expedientes'
+    | '/fiscal'
+    | '/honorarios'
+    | '/ia'
+    | '/registro-publico'
+    | '/reportes'
+    | '/uif'
+    | '/login'
+    | '/registro'
+    | '/clientes/$clienteId'
+    | '/clientes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/agenda'
+    | '/configuracion'
+    | '/dashboard'
+    | '/documental'
+    | '/expedientes'
+    | '/fiscal'
+    | '/honorarios'
+    | '/ia'
+    | '/registro-publico'
+    | '/reportes'
+    | '/uif'
+    | '/login'
+    | '/registro'
+    | '/clientes/$clienteId'
+    | '/clientes'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_auth'
+    | '/_app/agenda'
+    | '/_app/configuracion'
+    | '/_app/dashboard'
+    | '/_app/documental'
+    | '/_app/expedientes'
+    | '/_app/fiscal'
+    | '/_app/honorarios'
+    | '/_app/ia'
+    | '/_app/registro-publico'
+    | '/_app/reportes'
+    | '/_app/uif'
+    | '/_auth/login'
+    | '/_auth/registro'
+    | '/_app/clientes/$clienteId'
+    | '/_app/clientes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +262,164 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/registro': {
+      id: '/_auth/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof AuthRegistroRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_app/uif': {
+      id: '/_app/uif'
+      path: '/uif'
+      fullPath: '/uif'
+      preLoaderRoute: typeof AppUifRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reportes': {
+      id: '/_app/reportes'
+      path: '/reportes'
+      fullPath: '/reportes'
+      preLoaderRoute: typeof AppReportesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/registro-publico': {
+      id: '/_app/registro-publico'
+      path: '/registro-publico'
+      fullPath: '/registro-publico'
+      preLoaderRoute: typeof AppRegistroPublicoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/ia': {
+      id: '/_app/ia'
+      path: '/ia'
+      fullPath: '/ia'
+      preLoaderRoute: typeof AppIaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/honorarios': {
+      id: '/_app/honorarios'
+      path: '/honorarios'
+      fullPath: '/honorarios'
+      preLoaderRoute: typeof AppHonorariosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/fiscal': {
+      id: '/_app/fiscal'
+      path: '/fiscal'
+      fullPath: '/fiscal'
+      preLoaderRoute: typeof AppFiscalRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/expedientes': {
+      id: '/_app/expedientes'
+      path: '/expedientes'
+      fullPath: '/expedientes'
+      preLoaderRoute: typeof AppExpedientesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/documental': {
+      id: '/_app/documental'
+      path: '/documental'
+      fullPath: '/documental'
+      preLoaderRoute: typeof AppDocumentalRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/dashboard': {
+      id: '/_app/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/configuracion': {
+      id: '/_app/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof AppConfiguracionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/agenda': {
+      id: '/_app/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AppAgendaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clientes/': {
+      id: '/_app/clientes/'
+      path: '/clientes'
+      fullPath: '/clientes/'
+      preLoaderRoute: typeof AppClientesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/clientes/$clienteId': {
+      id: '/_app/clientes/$clienteId'
+      path: '/clientes/$clienteId'
+      fullPath: '/clientes/$clienteId'
+      preLoaderRoute: typeof AppClientesClienteIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAgendaRoute: typeof AppAgendaRoute
+  AppConfiguracionRoute: typeof AppConfiguracionRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppDocumentalRoute: typeof AppDocumentalRoute
+  AppExpedientesRoute: typeof AppExpedientesRoute
+  AppFiscalRoute: typeof AppFiscalRoute
+  AppHonorariosRoute: typeof AppHonorariosRoute
+  AppIaRoute: typeof AppIaRoute
+  AppRegistroPublicoRoute: typeof AppRegistroPublicoRoute
+  AppReportesRoute: typeof AppReportesRoute
+  AppUifRoute: typeof AppUifRoute
+  AppClientesClienteIdRoute: typeof AppClientesClienteIdRoute
+  AppClientesIndexRoute: typeof AppClientesIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAgendaRoute: AppAgendaRoute,
+  AppConfiguracionRoute: AppConfiguracionRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppDocumentalRoute: AppDocumentalRoute,
+  AppExpedientesRoute: AppExpedientesRoute,
+  AppFiscalRoute: AppFiscalRoute,
+  AppHonorariosRoute: AppHonorariosRoute,
+  AppIaRoute: AppIaRoute,
+  AppRegistroPublicoRoute: AppRegistroPublicoRoute,
+  AppReportesRoute: AppReportesRoute,
+  AppUifRoute: AppUifRoute,
+  AppClientesClienteIdRoute: AppClientesClienteIdRoute,
+  AppClientesIndexRoute: AppClientesIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface AuthRouteChildren {
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegistroRoute: typeof AuthRegistroRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegistroRoute: AuthRegistroRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
