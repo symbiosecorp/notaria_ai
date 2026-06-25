@@ -1,76 +1,89 @@
-# NOTARIA IA — Guía de convenciones para agentes
+# CLAUDE.md
 
-> Este documento es la referencia rápida de convenciones para trabajar en el frontend de NOTARIA IA. Para la arquitectura detallada ver `docs/ARCHITECTURE.md`.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Stack
+## Proyecto
 
-- **Framework:** TanStack Start (React, file-based routing, SSR opcional).
-- **Estado servidor:** TanStack Query.
-- **Estado UI global:** TanStack Store.
-- **UI:** shadcn/ui (New York), Tailwind CSS v4, Lucide icons.
-- **Validación:** Zod 4.
-- **Mock datos:** `@faker-js/faker` + `src/lib/api/mock-db.ts`.
+**NOTARIA IA** — plataforma web privada de gestión notarial (Puebla, México). Dominio
+jurídico/notarial, UI en **español**. Especificación funcional en `docs/RFP.md`. La
+**arquitectura detallada y cómo agregar un módulo** están en `docs/ARCHITECTURE.md` —
+léelo antes de cambios estructurales.
 
-## Arquitectura por features
+Estado: front con datos **simulados en memoria** (sin backend). Los módulos **Clientes,
+Expedientes y Honorarios** están funcionales de extremo a extremo (lista/detalle/alta/
+edición/borrado); el resto del RFP son placeholders navegables.
 
-Cada módulo del RFP es una carpeta autocontenida en `src/features/<modulo>/`. Las rutas en `src/routes/` son **solo cableado fino**; no deben contener lógica de negocio.
+## Comandos
 
-Flujo de datos estricto:
+Package manager **pnpm**. Dev en puerto 3000.
 
-```
-UI (componente) → hook (TanStack Query) → service (*.service.ts) → mock-db / API real
-```
+- `pnpm dev` — desarrollo · `pnpm build` — build · `pnpm preview`
+- `pnpm test` — Vitest (un test: `pnpm vitest run <patrón>`)
+- `pnpm lint` · `pnpm format` (prettier + eslint --fix)
+- `pnpm generate-routes` — regenerar `src/routeTree.gen.ts` tras agregar/quitar rutas
+- `pnpm exec tsc --noEmit` — verificación de tipos
 
-Cambiar de mock a backend real implica reescribir **solo** el archivo `*.service.ts` de la feature.
+**Verifica siempre** con `pnpm exec tsc --noEmit` y `pnpm lint` antes de dar por terminado.
 
-## Cómo agregar un módulo nuevo
+## Reglas de arquitectura (no romper)
 
-1. Copiar `src/features/_template/` a `src/features/<nombre>/`.
-2. Reemplazar `template` por `<nombre>` en archivos, nombres de funciones y tipos.
-3. Definir el schema en `schemas.ts` con Zod.
-4. Implementar el contrato en `api/<nombre>.service.ts` (hoy leyendo de `mockDb`, mañana con `fetch`).
-5. Crear `queryOptions` en `hooks/use-<nombre>.ts`.
-6. Crear componentes UI en `components/`.
-7. Registrar el módulo en `src/lib/config/modules.ts`.
-8. Crear la ruta en `src/routes/_app/<ruta>.tsx` (o `src/routes/_app/<ruta>/index.tsx`).
-9. Ejecutar `pnpm generate-routes` para regenerar `src/routeTree.gen.ts`.
-10. Verificar `pnpm exec tsc --noEmit` y `pnpm lint`.
+1. **Arquitectura por features.** Cada módulo vive en `src/features/<modulo>/` con esta
+   anatomía: `schemas.ts`, `api/<modulo>.service.ts`, `hooks/use-<modulo>.ts`,
+   `components/`, `index.ts` (barrel). Importa cada feature por su barrel.
+2. **Las rutas son cableado fino.** En `src/routes/` no metas lógica de negocio; solo
+   orquesta componentes y hooks de las features.
+3. **Flujo de datos en una sola dirección:**
+   `componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real`.
+   Para migrar a backend real se reescribe **solo** el `*.service.ts`.
+4. **Schema-first con Zod.** Cada entidad define su schema en `schemas.ts` y el tipo se
+   infiere con `z.infer`. Los services validan en el límite con `schema.parse(...)`.
+5. **Registro de módulos.** Para que un módulo aparezca en el sidebar/breadcrumbs,
+   regístralo en `src/lib/config/modules.ts` (única fuente de verdad).
+6. No edites `src/routeTree.gen.ts` (autogenerado).
 
-## Registro de módulos (única fuente de verdad)
+## Convenciones de código no obvias
 
-`src/lib/config/modules.ts` contiene el array tipado `modules`. El sidebar, breadcrumbs y verificación de permisos se generan a partir de aquí. Agregar un módulo = 1 entrada + 1 archivo de ruta.
+- **Imports con extensión explícita** `.ts`/`.tsx` (por `verbatimModuleSyntax` +
+  `allowImportingTsExtensions`). Tipos en import separado: `import type { X } from '...'`.
+- **Alias** `#/*` → `src/*` (úsalo siempre). `@/*` existe por compatibilidad; prefiere `#/`.
+- **shadcn/ui** (New York, base zinc, lucide): agrega componentes con
+  `pnpm dlx shadcn@latest add <c>`. Si el CLI pide sobrescribir un archivo existente,
+  **no lo sobrescribas**. Los primitives viven en `src/components/ui/`.
+- **Estilos**: reutiliza las variables/clases del design system "ocean/island" de
+  `src/styles.css` (`bg-lagoon`, `text-sea-ink`, `.island-shell`, etc.). No reinventes.
 
-## Manejo de errores
+## Patrones a seguir (úsalos, no inventes otros)
 
-- Usar `AppError` (`src/lib/errors/app-error.ts`) para errores tipados por feature.
-- Usar `createLogger('feature')` (`src/lib/errors/logger.ts`) para logs con tag.
-- Montar `errorComponent` en rutas para capturar errores con `AppErrorBoundary`.
+- **Formularios → TanStack Form** (`useForm`) con el **schema Zod de input como validador**
+  (`validators: { onSubmit: <schema>InputSchema }`). Reglas:
+  - Los `*InputSchema` **no llevan `.default()`**; los valores por defecto los aporta el
+    `emptyValues` del formulario (así el tipo de entrada del validador coincide con el form data).
+  - Campos de fecha/número convierten en el `onChange` del campo (input da string).
+  - Los campos derivados/denormalizados (ej. `clienteNombre`) se calculan en `onSubmit` y
+    luego `schema.parse(...)`. Errores de campo: `toFieldErrors(field.state.meta.errors)`
+    de `#/lib/forms`. Ejemplo de referencia: `src/features/clientes/components/cliente-form.tsx`.
+- **Confirmaciones → `ConfirmDialog`** (`#/components/common/confirm-dialog`). **Nunca**
+  uses `window.confirm`, `window.alert` ni `window.prompt`.
+- **Feedback de mutaciones → `toast`** de `sonner` (success/error).
+- **Mutaciones → hooks** con `useMutation` que invalidan las query keys del feature
+  (ver `use-clientes.ts`). IDs nuevos con `crypto.randomUUID()`.
+- **Rutas de un módulo:** `index.tsx` (lista), `$id.tsx` (detalle), `nuevo.tsx`,
+  `$id.editar.tsx`. Los loaders usan `context.queryClient.ensureQueryData(...)`. Monta
+  `errorComponent: (props) => <AppErrorBoundary {...props} feature="<modulo>" />`.
+- **Errores/logging:** lanza `AppError` (`#/lib/errors/app-error`) tipado por feature y usa
+  `createLogger('<feature>')` (`#/lib/errors/logger`).
+- **Formato:** `formatDate` / `formatCurrency` de `#/lib/format`.
 
-## Autenticación y permisos
+## Cómo agregar un módulo
 
-- El estado de sesión vive en `src/stores/auth-store.ts`.
-- `useAuth()` en `src/lib/auth/auth-context.tsx` expone `user`, `isLoading`, `login`, `logout`.
-- `requireAuth()` en `src/lib/auth/guard.ts` se usa en `beforeLoad` de rutas protegidas.
-- Los permisos y roles base están en `src/lib/auth/permissions.ts`.
+Resumen (detalle en `docs/ARCHITECTURE.md`): clona `src/features/_template/`, define el
+schema, implementa el service contra `mockDb`, crea los hooks (`queryOptions` + mutaciones),
+los componentes, regístralo en `src/lib/config/modules.ts`, crea las rutas en
+`src/routes/_app/<modulo>/` y corre `pnpm generate-routes`.
 
-## Comandos útiles
+## Stack (referencia)
 
-```bash
-pnpm dev                 # servidor de desarrollo en http://localhost:3000
-pnpm generate-routes     # regenerar árbol de rutas de TanStack Router
-pnpm exec tsc --noEmit   # verificación de tipos
-pnpm lint                # ESLint
-pnpm lint --fix          # ESLint con auto-fix
-pnpm build               # build de producción
-```
-
-## Alias
-
-- `#/*` → `src/*` (usar siempre para imports internos).
-- `@/*` → `src/*` (se mantiene por compatibilidad, preferir `#/*`).
-
-## Notas
-
-- No introducir lógica de negocio en `src/routes/`; las rutas solo orquestan componentes y hooks.
-- No modificar `src/routeTree.gen.ts` manualmente.
-- Mantener el estilo del design system "ocean/island" definido en `src/styles.css`.
+TanStack Start (React 19, SSR, file-based routing) · TanStack Query/Store/Form · Zod 4 ·
+shadcn/ui + Tailwind v4 · Vite 8 · TypeScript 6 (strict) · pnpm.
+Adaptadores de IA disponibles (`@tanstack/ai-*`: Anthropic/OpenAI/Gemini/Ollama); aún sin
+integrar — al usarlos, ponlos detrás de la capa de services como el resto.

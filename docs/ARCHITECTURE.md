@@ -1,141 +1,179 @@
-# Arquitectura — Base / Esqueleto del Front NOTARIA IA
+# Arquitectura — Front NOTARIA IA
 
-## Objetivo
+Referencia detallada de cómo está organizado el proyecto y cómo extenderlo sin romper la
+estructura. Para las reglas cortas del día a día ver `CLAUDE.md`; para qué es el proyecto y
+cómo correrlo ver `README.md`.
 
-Esta entrega deja una **base arquitectónica escalable y mantenible**: un esqueleto navegable de extremo a extremo donde agregar un módulo o localizar un bug sea trivial y predecible. La prioridad es *"saber exactamente dónde está el problema y solucionarlo rápido"*.
+## Objetivo de diseño
 
-## Alcance
-
-- Todos los módulos del RFP existen como **placeholders navegables**.
-- El módulo **Clientes** es el **ejemplo vivo** del patrón modular: schema → service mock → hook → página lista mínima funcional.
-- Los datos son **mock en memoria** (faker) detrás de una capa de servicios por feature.
-- No se incluyen CRUD/forms/detalle completos, backend real, IA real, 2FA ni integraciones externas.
+Una base **escalable y mantenible** donde agregar un módulo o localizar un bug sea
+predecible: *"saber exactamente dónde está el problema y solucionarlo rápido"*. Esto se
+logra con **aislamiento por features** y un **flujo de datos en capas** unidireccional.
 
 ## Principio rector: arquitectura por features
 
 ```
 src/
-  routes/          # Cableado fino de rutas (file-based TanStack Router)
-  features/        # Lógica de negocio por dominio
-  components/        # UI compartida (layout, common, primitives shadcn)
-  lib/             # Utilidades, config, auth, errores, API
-  stores/          # Estado global UI y auth con TanStack Store
+  routes/        # Cableado fino de rutas (file-based TanStack Router). Sin lógica de negocio.
+  features/      # Lógica de negocio por dominio (un módulo = una carpeta autocontenida).
+  components/    # UI compartida: ui/ (shadcn), layout/, common/.
+  lib/           # Infraestructura: config, api, auth, errores, helpers.
+  stores/        # Estado global con TanStack Store (auth, tema).
 ```
 
-Flujo de datos:
+Flujo de datos (una sola dirección):
 
 ```
-Componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real
+componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real
 ```
 
-Cambiar de mock a backend real implica reescribir **solo** el `*.service.ts` correspondiente.
+Migrar de mock a backend real = reescribir **solo** el `*.service.ts` del feature; los
+hooks, componentes y rutas no se enteran.
 
-## Estructura detallada
+## Anatomía de un feature
 
-### Rutas (`src/routes/`)
-
-| Archivo | Responsabilidad |
-| --- | --- |
-| `__root.tsx` | Layout raíz, metadatos, providers globales (TooltipProvider). |
-| `index.tsx` | Redirect `/` → `/dashboard`. |
-| `_auth.tsx` | Layout público (card centrada). |
-| `_auth/login.tsx` | Formulario de login. |
-| `_auth/registro.tsx` | Formulario de registro. |
-| `_app.tsx` | Layout autenticado (`AppShell`) + guard `beforeLoad`. |
-| `_app/dashboard.tsx` | Dashboard con resumen de módulos. |
-| `_app/clientes/index.tsx` | Lista de clientes (ejemplo vivo). |
-| `_app/clientes/$clienteId.tsx` | Placeholder de detalle. |
-| `_app/{expedientes,honorarios,...}.tsx` | Placeholders de cada módulo. |
-
-Las rutas no contienen lógica de negocio; solo importan componentes y hooks de sus features.
-
-### Features (`src/features/`)
-
-#### Clientes (feature de referencia)
+Cada módulo en `src/features/<modulo>/` tiene:
 
 ```
-features/clientes/
-  schemas.ts              # Zod schemas + tipos inferidos
-  api/clientes.service.ts # contrato + implementación mock
-  hooks/use-clientes.ts   # queryOptions de TanStack Query
-  components/clientes-table.tsx
-  index.ts                # barrel
+features/<modulo>/
+  schemas.ts                 # Zod schemas (entidad + input) + enums/labels + tipos inferidos
+  api/<modulo>.service.ts    # Contrato de negocio: list/get/create/update/delete (mock hoy)
+  hooks/use-<modulo>.ts      # queryOptions + mutaciones (useMutation que invalidan keys)
+  components/                # UI propia del dominio (tabla, formulario, badges…)
+  index.ts                   # barrel: superficie pública del feature
 ```
 
-#### Template (`features/_template/`)
+Módulos funcionales actuales: **clientes**, **expedientes**, **honorarios**. El feature
+**clientes** es el ejemplo de referencia más limpio. `features/_template/` es la plantilla
+documentada para clonar (ver su `README.md`).
 
-Carpeta documentada para clonar módulos nuevos. Ver `src/features/_template/README.md`.
+### Schemas (Zod)
 
-### Componentes compartidos (`src/components/`)
+- La **entidad** (`clienteSchema`) modela el registro completo (con `id`, `createdAt`, …).
+  Usa `z.coerce.date()` para tolerar fechas como string desde una API real.
+- El **input** (`clienteInputSchema`) es lo que captura el formulario: `omit` de los campos
+  generados. **No lleva `.default()`** (los defaults los pone el form), para que el tipo de
+  entrada del validador coincida con el form data en TanStack Form. Si un campo de fecha usa
+  `z.coerce.date()` en la entidad, sobrescríbelo a `z.date()` en el input (ver expedientes).
+- Los tipos se infieren con `z.infer`. Los `Record<Enum, string>` de labels viven junto al
+  enum y se reutilizan en tabla/detalle/formulario.
 
-- `ui/` — primitives shadcn (button, card, sidebar, table, etc.).
+### Service (capa de datos)
+
+- Funciones async tipadas; `await delay()` simula latencia.
+- **Validan en el límite** con `schema.array().parse(...)` / `schema.parse(...)`.
+- Lanzan `AppError('NOT_FOUND', …, '<feature>')` cuando corresponde.
+- Mutan `mockDb` (in-memory); IDs nuevos con `crypto.randomUUID()`; folios autogenerados.
+
+### Hooks
+
+- `<modulo>Keys` (factory de query keys), `<modulo>ListOptions()` / `<modulo>ByIdOptions(id)`
+  con `queryOptions`, y mutaciones (`useCreate*/useUpdate*/useDelete*`) que invalidan
+  `<modulo>Keys.all` en `onSuccess`.
+
+### Formularios (TanStack Form + Zod)
+
+Patrón (ver `cliente-form.tsx`):
+
+```tsx
+const form = useForm({
+  defaultValues: { ...emptyValues, ...defaultValues },
+  validators: { onSubmit: clienteInputSchema },
+  onSubmit: async ({ value }) => { await onSubmit(clienteInputSchema.parse(value)) },
+})
+// <form.Field name="…">{(field) => (<Input value={field.state.value}
+//   onChange={(e) => field.handleChange(e.target.value)} />)}</form.Field>
+// Conditional/derived UI: <form.Subscribe selector={(s) => s.values.x}>{…}</form.Subscribe>
+```
+
+- Campos de **fecha/número** convierten en el `onChange` (el input entrega string).
+- Campos **derivados** (ej. `clienteNombre` a partir de `clienteId`) se calculan en
+  `onSubmit` antes de `parse`.
+- Errores por campo: `toFieldErrors(field.state.meta.errors)` de `#/lib/forms` →
+  `<FieldError errors={…} />`.
+
+## Rutas (`src/routes/`)
+
+File-based. Estructura por módulo bajo el layout autenticado `_app`:
+
+```
+_app/<modulo>/
+  index.tsx          # lista (loader: ensureQueryData de la lista; búsqueda en cliente)
+  $<id>.tsx          # detalle (loader del item; borrar vía ConfirmDialog + toast)
+  nuevo.tsx          # alta (formulario del feature)
+  $<id>.editar.tsx   # edición (carga item + dependencias; defaultValues al form)
+```
+
+Convenciones de ruta:
+
+- Loaders: `loader: ({ context }) => context.queryClient.ensureQueryData(<opts>)`. Si
+  necesitas varias fuentes, `Promise.all([...])`.
+- Boundary por ruta: `errorComponent: (props) => <AppErrorBoundary {...props} feature="<modulo>" />`.
+- `index.tsx` redirige `/` → `/dashboard`. `_auth/*` son rutas públicas (login/registro).
+
+## Componentes compartidos (`src/components/`)
+
+- `ui/` — primitives shadcn (button, card, table, select, field, sidebar, alert-dialog, …).
 - `layout/` — `AppShell`, `NavSidebar`, `Topbar`, `AppBreadcrumbs`, `UserMenu`.
-- `common/` — `PageHeader`, `ModulePlaceholder`, `EmptyState`, `DataTable`.
+- `common/` — `PageHeader`, `EmptyState`, `DataTable`, `ModulePlaceholder`,
+  **`ConfirmDialog`** (diálogo de confirmación reutilizable; reemplaza a `window.confirm`).
 
-### Infraestructura (`src/lib/` y `src/stores/`)
+## Infraestructura (`src/lib/` y `src/stores/`)
 
 | Archivo | Responsabilidad |
 | --- | --- |
 | `lib/config/modules.ts` | Registro único de módulos (sidebar, breadcrumbs, permisos). |
-| `lib/config/app.ts` | Constantes de la aplicación. |
-| `lib/api/mock-db.ts` | Store en memoria + seed con faker. |
-| `lib/api/query-client.ts` | Configuración de `QueryClient`. |
+| `lib/config/app.ts` | Constantes de la app (nombre, versión). |
+| `lib/api/mock-db.ts` | Store en memoria (clientes, expedientes, cotizaciones) + seed con faker. |
+| `lib/api/query-client.ts` | `createQueryClient()` (nuevo por request, evita fuga SSR). |
 | `lib/auth/auth-context.tsx` | `useAuth()` (lee del store). |
-| `lib/auth/guard.ts` | `requireAuth()` y `requirePermission()`. |
-| `lib/auth/permissions.ts` | Roles y permisos base. |
-| `lib/errors/app-error.ts` | Clase `AppError` tipada. |
-| `lib/errors/logger.ts` | `createLogger(feature)` con tag. |
-| `lib/errors/error-boundary.tsx` | Boundary reutilizable por ruta. |
-| `stores/auth-store.ts` | Estado de sesión (TanStack Store). |
-| `stores/ui-store.ts` | Estado UI global: sidebar, tema. |
+| `lib/auth/guard.ts` | `requireAuth()` / `requirePermission()` (SSR-safe; reciben `context.auth`). |
+| `lib/auth/permissions.ts` | Roles y permisos base (RBAC scaffold). |
+| `lib/errors/app-error.ts` | Clase `AppError` tipada por feature. |
+| `lib/errors/logger.ts` | `createLogger(feature)` (usa `import.meta.env.VITE_LOG_LEVEL`). |
+| `lib/errors/error-boundary.tsx` | `AppErrorBoundary` por ruta. |
+| `lib/format.ts` | `formatDate`, `formatCurrency` (MXN). |
+| `lib/forms.ts` | `toFieldErrors` (adapta errores de TanStack Form a `FieldError`). |
+| `stores/auth-store.ts` | Sesión mock (TanStack Store) persistida en `localStorage`. |
+| `stores/ui-store.ts` | Tema (light/dark/system). |
 
-## Piezas clave
+### Wiring de la app
 
-### 1. Registro de módulos
+- `src/router.tsx` crea el router e inyecta el **contexto** (`queryClient`, `auth`) y conecta
+  SSR + Query (`setupRouterSsrQueryIntegration`).
+- `src/routes/__root.tsx` define el documento raíz, metadatos, `TooltipProvider` y devtools.
+- La sesión es mock y client-side: `requireAuth` se omite en SSR (el cliente es la
+  autoridad). Con auth real se moverá a cookies legibles en el servidor.
 
-`src/lib/config/modules.ts` define `modules` con `{ id, label, path, icon, group, permission }`. El sidebar, breadcrumbs y el scaffold de permisos se generan de aquí.
+## Honorarios: motor de arancel
 
-### 2. AppShell y navegación
+`features/honorarios/api/arancel.ts` calcula el honorario (tabulador progresivo por valor +
+cuotas fijas en UMAs por artículo, IVA, descuentos/recargos). `ARANCEL_CONFIG` (UMA, IVA) y
+los tabuladores son **ilustrativos**: hay que cargar los valores reales de la Ley del Arancel
+de Puebla. El service usa el motor para derivar los importes de cada cotización.
 
-`AppShell` (`components/layout/app-shell.tsx`) combina:
+## Cómo agregar un módulo
 
-- `SidebarProvider` + `NavSidebar` (responsive, usa shadcn sidebar + Sheet en móvil).
-- `Topbar` con toggle de sidebar, breadcrumbs y toggle de tema.
-- `UserMenu` con dropdown de cuenta y logout.
-
-### 3. Capa de datos mock
-
-`mockDb` (`src/lib/api/mock-db.ts`) siembra clientes con faker. Cada `*.service.ts` expone funciones async tipadas (`listClientes`, `getCliente`, ...). Los hooks (`use-clientes.ts`) envuelven con `queryOptions` de TanStack Query para cache, loaders y devtools.
-
-### 4. Schema-first con Zod
-
-Cada entidad define su Zod schema en `features/<modulo>/schemas.ts`. Los tipos se infieren (`z.infer`).
-
-### 5. Manejo de errores + logging
-
-`AppError` etiqueta cada error con `code`, `feature` y `timestamp`. `createLogger` agrega un tag de feature a cada log. `AppErrorBoundary` se monta por ruta vía `errorComponent`.
-
-### 6. Auth + RBAC scaffold
-
-El estado de sesión está en `authStore` (`src/stores/auth-store.ts`). `requireAuth()` se usa en el `beforeLoad` de `_app.tsx`. Los permisos base están en `permissions.ts` y se conectarán a 2FA/JWT en entregas posteriores.
-
-### 7. Tema
-
-`uiStore` (`src/stores/ui-store.ts`) gestiona el tema (light/dark/system) y el estado del sidebar. `AppShell` inicializa el tema en un `useEffect`.
+1. Copia `src/features/_template/` a `src/features/<modulo>/`.
+2. Reemplaza `template` por `<modulo>` en archivos, funciones y tipos.
+3. Define `schemas.ts` (entidad + input; sin `.default()` en el input).
+4. Implementa `api/<modulo>.service.ts` (CRUD contra `mockDb`; agrega la colección en
+   `lib/api/mock-db.ts` y siémbrala).
+5. Crea `hooks/use-<modulo>.ts` (`queryOptions` + mutaciones).
+6. Crea `components/` (tabla + formulario con TanStack Form) y el `index.ts` (barrel).
+7. Regístralo en `src/lib/config/modules.ts`.
+8. Crea las rutas en `src/routes/_app/<modulo>/` (index/detalle/nuevo/editar).
+9. `pnpm generate-routes`, luego `pnpm exec tsc --noEmit` y `pnpm lint`.
 
 ## Verificación
 
-- `pnpm exec tsc --noEmit` — tipos correctos.
-- `pnpm lint` — lint limpio.
-- `pnpm generate-routes` — árbol de rutas actualizado.
-- `pnpm dev` — navegación manual:
-  - `/` redirige a `/dashboard`.
-  - Sin sesión redirige a `/login`.
-  - Login mock entra al shell.
-  - Sidebar navega a cada módulo.
-  - `/clientes` muestra lista sembrada con faker.
-  - Breadcrumbs y tema funcionan.
+- `pnpm exec tsc --noEmit` y `pnpm lint` limpios.
+- `pnpm dev`: login mock → sidebar navega a cada módulo; Clientes/Expedientes/Honorarios
+  permiten listar, ver detalle, crear, editar y eliminar (con `ConfirmDialog`); la
+  calculadora de honorarios muestra el desglose en vivo.
 
-## Fuera de alcance (entregas siguientes)
+## Pendiente (entregas siguientes)
 
-CRUD/forms/detalle completos de Clientes y demás módulos, integración IA real, backend/API real, 2FA, calculadora del Arancel, generación documental Word, integración SAT.
+Backend/API real, integración IA, 2FA, valores reales del arancel, generación documental
+Word, integración SAT, módulos restantes del RFP (documental, registro público, fiscal,
+UIF, agenda, reportes).
