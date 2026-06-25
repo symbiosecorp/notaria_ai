@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import {
   Table,
   TableBody,
@@ -9,7 +10,22 @@ import {
 import { Badge } from '#/components/ui/badge'
 import { Skeleton } from '#/components/ui/skeleton'
 import { EmptyState } from '#/components/common/empty-state'
-import type { Cliente } from '../schemas'
+import { formatDate } from '#/lib/format'
+import {
+  estatusClienteLabels,
+  tipoPersonaLabels,
+  type Cliente,
+  type EstatusCliente,
+} from '../schemas'
+
+const estatusVariant: Record<
+  EstatusCliente,
+  'default' | 'secondary' | 'outline'
+> = {
+  activo: 'default',
+  prospecto: 'secondary',
+  inactivo: 'outline',
+}
 
 export interface ClientesTableProps {
   clientes: Cliente[]
@@ -28,35 +44,50 @@ export function ClientesTable({ clientes, isLoading }: ClientesTableProps) {
   }
 
   if (clientes.length === 0) {
-    return <EmptyState title="Sin clientes" description="No hay clientes registrados aún." />
+    return (
+      <EmptyState
+        title="Sin clientes"
+        description="No hay clientes registrados aún. Crea el primero con “Nuevo cliente”."
+      />
+    )
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Teléfono</TableHead>
-          <TableHead>CURP</TableHead>
+          <TableHead>Nombre / Razón social</TableHead>
+          <TableHead>Tipo</TableHead>
+          <TableHead>RFC</TableHead>
+          <TableHead>Estatus</TableHead>
           <TableHead>Alta</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {clientes.map((cliente) => (
           <TableRow key={cliente.id}>
-            <TableCell className="font-medium">{cliente.nombre}</TableCell>
-            <TableCell>{cliente.email}</TableCell>
-            <TableCell>{cliente.telefono}</TableCell>
-            <TableCell>
-              <Badge variant="outline">{cliente.curp || '—'}</Badge>
+            <TableCell className="font-medium">
+              <Link
+                to="/clientes/$clienteId"
+                params={{ clienteId: cliente.id }}
+                className="hover:underline"
+              >
+                {cliente.nombre}
+              </Link>
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {tipoPersonaLabels[cliente.tipoPersona]}
+            </TableCell>
+            <TableCell className="font-mono text-xs">
+              {cliente.rfc || '—'}
             </TableCell>
             <TableCell>
-              {new Date(cliente.createdAt).toLocaleDateString('es-MX', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-              })}
+              <Badge variant={estatusVariant[cliente.estatus]}>
+                {estatusClienteLabels[cliente.estatus]}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-muted-foreground">
+              {formatDate(cliente.createdAt)}
             </TableCell>
           </TableRow>
         ))}
