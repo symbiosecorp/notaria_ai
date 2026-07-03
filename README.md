@@ -1,251 +1,82 @@
-Welcome to your new TanStack Start app! 
+# NOTARIA IA
 
-# Getting Started
+Plataforma web privada de gestión notarial integral para la Notaría Pública No. 1 de
+Tetela de Ocampo, Puebla. Centraliza clientes, expedientes, honorarios, control
+documental, cumplimiento (UIF/PLD), agenda, registro público y reportes, con asistencia
+de IA jurídica. La especificación funcional completa está en [`docs/RFP.md`](docs/RFP.md).
 
-To run this application:
+> **Estado:** front en construcción con datos **simulados en memoria** (sin backend aún).
+> Los módulos de Clientes, Expedientes y Honorarios están funcionales de extremo a extremo
+> contra la capa mock.
+
+## Stack
+
+- **Framework:** TanStack Start (React 19, SSR, file-based routing)
+- **Datos servidor:** TanStack Query · **Estado UI:** TanStack Store
+- **Formularios:** TanStack Form + **Zod 4** (validación)
+- **UI:** shadcn/ui (New York) · Tailwind CSS v4 · Lucide
+- **Build/Tooling:** Vite 8 · TypeScript 6 · pnpm · Vitest · ESLint + Prettier
+
+## Requisitos
+
+- Node.js 20+ y **pnpm**.
+
+## Cómo correr
 
 ```bash
 pnpm install
-pnpm dev
+pnpm dev            # servidor de desarrollo en http://localhost:3000
 ```
 
-# Building For Production
+Acceso de desarrollo: la sesión es **mock** (cualquier correo/contraseña no vacíos inician
+sesión). La sesión se guarda en `localStorage`.
 
-To build this application for production:
+## Scripts
 
 ```bash
-pnpm build
+pnpm dev               # desarrollo (puerto 3000)
+pnpm build             # build de producción
+pnpm preview           # previsualizar el build
+pnpm test              # tests con Vitest
+pnpm lint              # ESLint
+pnpm format            # Prettier --write + eslint --fix
+pnpm generate-routes   # regenerar src/routeTree.gen.ts (tras agregar/quitar rutas)
 ```
 
-## Testing
+Verificación de tipos: `pnpm exec tsc --noEmit`.
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+## Variables de entorno
 
-```bash
-pnpm test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `pnpm add @tailwindcss/vite tailwindcss --dev`
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
-
-```bash
-pnpm lint
-pnpm format
-pnpm check
-```
-
-
-# TanStack Chat Application
-
-Am example chat application built with TanStack Start, TanStack Store, and Claude AI.
-
-## .env Updates
+Por ahora no se requieren para correr el front con datos mock. Cuando se integre IA/backend:
 
 ```env
-ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_API_KEY=...        # motor de IA (futuro)
+VITE_LOG_LEVEL=info          # nivel de logs en el cliente (debug|info|warn|error)
 ```
 
-## ✨ Features
+## Estructura y convenciones
 
-### AI Capabilities
-- 🤖 Powered by Claude 3.5 Sonnet 
-- 📝 Rich markdown formatting with syntax highlighting
-- 🎯 Customizable system prompts for tailored AI behavior
-- 🔄 Real-time message updates and streaming responses (coming soon)
+El proyecto sigue una **arquitectura por features**. Antes de tocar el código (o de pedirle
+cambios a un asistente de IA), revisa:
 
-### User Experience
-- 🎨 Modern UI with Tailwind CSS and Lucide icons
-- 🔍 Conversation management and history
-- 🔐 Secure API key management
-- 📋 Markdown rendering with code highlighting
+- [`CLAUDE.md`](CLAUDE.md) — reglas accionables y convenciones que **todo cambio debe respetar**.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — estructura de carpetas, flujo de datos en
+  capas y cómo agregar un módulo nuevo.
 
-### Technical Features
-- 📦 Centralized state management with TanStack Store
-- 🔌 Extensible architecture for multiple AI providers
-- 🛠️ TypeScript for type safety
+Resumen: cada módulo es una carpeta autocontenida en `src/features/<modulo>/`; las rutas en
+`src/routes/` son solo cableado fino. El flujo de datos es
+`componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real`.
 
-## Architecture
+## Módulos funcionales
 
-### Tech Stack
-- **Frontend Framework**: TanStack Start
-- **Routing**: TanStack Router
-- **State Management**: TanStack Store
-- **Styling**: Tailwind CSS
-- **AI Integration**: Anthropic's Claude API
+| Módulo | Ruta | Qué hace |
+| --- | --- | --- |
+| Clientes | `/clientes` | CRUD de personas físicas/morales, cumplimiento UIF/PLD. |
+| Expedientes | `/expedientes` | CRUD de trámites notariales (14 tipos de acto, estatus, documentos). |
+| Honorarios | `/honorarios` | Cotizaciones con motor de cálculo del Arancel de Puebla. |
 
-## Shadcn
+El resto de módulos del RFP existen como placeholders navegables.
 
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
+## Licencia
 
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Privado. Todos los derechos reservados.
