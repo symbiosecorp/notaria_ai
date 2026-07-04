@@ -152,3 +152,7 @@ export function resetMockDb() {
   mockDb.cotizaciones = []
   seeded = false
 }
+
+// Auto-seed al cargar el módulo: los services siempre encuentran datos sin que
+// las rutas conozcan la infraestructura (los tests pueden usar resetMockDb()).
+seedMockDb()

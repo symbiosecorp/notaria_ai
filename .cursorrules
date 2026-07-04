@@ -1,7 +1,7 @@
-# shadcn instructions
+# Reglas para Cursor
 
-Use the latest version of Shadcn to install new components, like this command to add a button component:
+La guía canónica de este repo para TODOS los agentes IA está en `AGENTS.md` (raíz).
+Léela antes de editar: arquitectura por features, comandos de verificación, guardarraíles
+de imports y patrones obligatorios. La arquitectura detallada está en `docs/ARCHITECTURE.md`.
 
-```bash
-pnpm dlx shadcn@latest add button
-```
+No dupliques reglas aquí; cualquier regla nueva se agrega en `AGENTS.md`.
