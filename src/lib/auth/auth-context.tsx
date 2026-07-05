@@ -1,20 +1,42 @@
-import { useStore } from '@tanstack/react-store'
-import { authStore, login, logout  } from '#/stores/auth-store'
-import type {User} from '#/stores/auth-store';
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
+import { loginFn, logoutFn } from './api.ts'
+import { sessionKeys, sessionQueryOptions } from './session.ts'
+import type { LoginResult } from './api.ts'
+import type { LoginInput } from './schemas.ts'
+import type { User } from './types.ts'
 
 export type { User }
 
 export interface AuthContextValue {
   user: User | null
-  isLoading: boolean
-  login: typeof login
-  logout: typeof logout
+  login: (input: LoginInput) => Promise<LoginResult>
+  logout: () => Promise<void>
 }
 
 export function useAuth(): AuthContextValue {
-  const state = useStore(authStore)
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { data: user } = useQuery(sessionQueryOptions())
+
+  async function login(input: LoginInput): Promise<LoginResult> {
+    const result = await loginFn({ data: input })
+    if (result.ok) {
+      await queryClient.invalidateQueries({ queryKey: sessionKeys.session })
+      await router.invalidate()
+    }
+    return result
+  }
+
+  async function logout() {
+    await logoutFn()
+    queryClient.setQueryData(sessionKeys.session, null)
+    await router.invalidate()
+    await router.navigate({ to: '/login' })
+  }
+
   return {
-    ...state,
+    user: user ?? null,
     login,
     logout,
   }

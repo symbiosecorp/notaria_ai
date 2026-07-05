@@ -10,17 +10,24 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
 import { APP_DESCRIPTION, APP_NAME } from '#/lib/config/app'
+import { sessionQueryOptions } from '#/lib/auth/session.ts'
 import { TooltipProvider } from '#/components/ui/tooltip'
 
 import type { QueryClient } from '@tanstack/react-query'
-import type { auth } from '#/stores/auth-store'
 
 interface MyRouterContext {
   queryClient: QueryClient
-  auth: typeof auth
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
+  // La sesión se asegura una vez aquí y queda en el context para todos los
+  // guards hijos (_app requiere sesión, _auth redirige si ya la hay).
+  beforeLoad: async ({ context }) => {
+    const user = await context.queryClient.ensureQueryData(
+      sessionQueryOptions(),
+    )
+    return { user }
+  },
   head: () => ({
     meta: [
       {

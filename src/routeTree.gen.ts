@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRegistroRouteImport } from './routes/_auth/registro'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppUifRouteImport } from './routes/_app/uif'
 import { Route as AppReportesRouteImport } from './routes/_app/reportes'
@@ -48,11 +47,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRegistroRoute = AuthRegistroRouteImport.update({
-  id: '/registro',
-  path: '/registro',
-  getParentRoute: () => AuthRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
@@ -182,7 +176,6 @@ export interface FileRoutesByFullPath {
   '/reportes': typeof AppReportesRoute
   '/uif': typeof AppUifRoute
   '/login': typeof AuthLoginRoute
-  '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/clientes/nuevo': typeof AppClientesNuevoRoute
   '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
@@ -208,7 +201,6 @@ export interface FileRoutesByTo {
   '/reportes': typeof AppReportesRoute
   '/uif': typeof AppUifRoute
   '/login': typeof AuthLoginRoute
-  '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/clientes/nuevo': typeof AppClientesNuevoRoute
   '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
@@ -237,7 +229,6 @@ export interface FileRoutesById {
   '/_app/reportes': typeof AppReportesRoute
   '/_app/uif': typeof AppUifRoute
   '/_auth/login': typeof AuthLoginRoute
-  '/_auth/registro': typeof AuthRegistroRoute
   '/_app/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
   '/_app/clientes/nuevo': typeof AppClientesNuevoRoute
   '/_app/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
@@ -265,7 +256,6 @@ export interface FileRouteTypes {
     | '/reportes'
     | '/uif'
     | '/login'
-    | '/registro'
     | '/clientes/$clienteId'
     | '/clientes/nuevo'
     | '/expedientes/$expedienteId'
@@ -291,7 +281,6 @@ export interface FileRouteTypes {
     | '/reportes'
     | '/uif'
     | '/login'
-    | '/registro'
     | '/clientes/$clienteId'
     | '/clientes/nuevo'
     | '/expedientes/$expedienteId'
@@ -319,7 +308,6 @@ export interface FileRouteTypes {
     | '/_app/reportes'
     | '/_app/uif'
     | '/_auth/login'
-    | '/_auth/registro'
     | '/_app/clientes/$clienteId'
     | '/_app/clientes/nuevo'
     | '/_app/expedientes/$expedienteId'
@@ -362,13 +350,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_auth/registro': {
-      id: '/_auth/registro'
-      path: '/registro'
-      fullPath: '/registro'
-      preLoaderRoute: typeof AuthRegistroRouteImport
-      parentRoute: typeof AuthRoute
     }
     '/_auth/login': {
       id: '/_auth/login'
@@ -613,12 +594,10 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AuthRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
-  AuthRegistroRoute: typeof AuthRegistroRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
-  AuthRegistroRoute: AuthRegistroRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
