@@ -11,10 +11,12 @@ jurídico/notarial, UI en **español**. Especificación funcional en `docs/RFP.m
 **arquitectura detallada y cómo agregar un módulo** están en `docs/ARCHITECTURE.md` —
 léelo antes de cambios estructurales.
 
-Estado: front con datos **simulados en memoria** (sin backend). Los módulos **Clientes,
-Expedientes y Honorarios** están funcionales de extremo a extremo (lista/detalle/alta/
-edición/borrado); el resto del RFP son placeholders navegables. Backend objetivo: Supabase
-(migración por fases; se reescriben solo los `*.service.ts`).
+Estado: **auth real con Supabase** (email+password, sesión en cookies vía `@supabase/ssr`,
+tabla `profiles` con roles y RLS; ver `src/lib/auth/` y `supabase/migrations/`). Los datos
+de negocio siguen **simulados en memoria**: los módulos **Clientes, Expedientes y
+Honorarios** son funcionales de extremo a extremo contra mockDb; el resto del RFP son
+placeholders navegables. Migración a Supabase por fases: se reescriben solo los
+`*.service.ts`.
 
 ## Comandos
 
@@ -47,8 +49,9 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
   variable nueva se documenta en `.env.example` **sin** valor. La `service_role` key de
   Supabase jamás va en código cliente.
 - **Supabase MCP en modo read-only:** úsalo para consultar esquema/datos. Los cambios de
-  esquema van **siempre** en migraciones versionadas (`supabase/migrations/`, a partir de
-  la Fase 1) revisables en PR — nunca directo contra la base.
+  esquema van **siempre** en migraciones versionadas en `supabase/migrations/` (CLI:
+  `pnpm exec supabase ...`; aplicar con `db push`) revisables en PR — nunca directo contra
+  la base.
 
 ## Reglas de arquitectura (no romper)
 
