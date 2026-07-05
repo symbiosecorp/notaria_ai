@@ -3,4 +3,5 @@ allowBuilds:
   esbuild: true
   lightningcss: true
   protobufjs: false
+  supabase: true
   unrs-resolver: false
