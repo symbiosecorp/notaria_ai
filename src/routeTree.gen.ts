@@ -31,6 +31,7 @@ import { Route as AppHonorariosCotizacionIdRouteImport } from './routes/_app/hon
 import { Route as AppExpedientesNuevoRouteImport } from './routes/_app/expedientes/nuevo'
 import { Route as AppExpedientesExpedienteIdRouteImport } from './routes/_app/expedientes/$expedienteId'
 import { Route as AppClientesNuevoRouteImport } from './routes/_app/clientes/nuevo'
+import { Route as AppClientesImportarRouteImport } from './routes/_app/clientes/importar'
 import { Route as AppClientesClienteIdRouteImport } from './routes/_app/clientes/$clienteId'
 import { Route as AppHonorariosCotizacionIdEditarRouteImport } from './routes/_app/honorarios/$cotizacionId.editar'
 import { Route as AppExpedientesExpedienteIdEditarRouteImport } from './routes/_app/expedientes/$expedienteId.editar'
@@ -146,6 +147,11 @@ const AppClientesNuevoRoute = AppClientesNuevoRouteImport.update({
   path: '/clientes/nuevo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppClientesImportarRoute = AppClientesImportarRouteImport.update({
+  id: '/clientes/importar',
+  path: '/clientes/importar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppClientesClienteIdRoute = AppClientesClienteIdRouteImport.update({
   id: '/clientes/$clienteId',
   path: '/clientes/$clienteId',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
+  '/clientes/importar': typeof AppClientesImportarRoute
   '/clientes/nuevo': typeof AppClientesNuevoRoute
   '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
   '/expedientes/nuevo': typeof AppExpedientesNuevoRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/registro': typeof AuthRegistroRoute
   '/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
+  '/clientes/importar': typeof AppClientesImportarRoute
   '/clientes/nuevo': typeof AppClientesNuevoRoute
   '/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
   '/expedientes/nuevo': typeof AppExpedientesNuevoRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/registro': typeof AuthRegistroRoute
   '/_app/clientes/$clienteId': typeof AppClientesClienteIdRouteWithChildren
+  '/_app/clientes/importar': typeof AppClientesImportarRoute
   '/_app/clientes/nuevo': typeof AppClientesNuevoRoute
   '/_app/expedientes/$expedienteId': typeof AppExpedientesExpedienteIdRouteWithChildren
   '/_app/expedientes/nuevo': typeof AppExpedientesNuevoRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/registro'
     | '/clientes/$clienteId'
+    | '/clientes/importar'
     | '/clientes/nuevo'
     | '/expedientes/$expedienteId'
     | '/expedientes/nuevo'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/registro'
     | '/clientes/$clienteId'
+    | '/clientes/importar'
     | '/clientes/nuevo'
     | '/expedientes/$expedienteId'
     | '/expedientes/nuevo'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/_auth/login'
     | '/_auth/registro'
     | '/_app/clientes/$clienteId'
+    | '/_app/clientes/importar'
     | '/_app/clientes/nuevo'
     | '/_app/expedientes/$expedienteId'
     | '/_app/expedientes/nuevo'
@@ -496,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClientesNuevoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/clientes/importar': {
+      id: '/_app/clientes/importar'
+      path: '/clientes/importar'
+      fullPath: '/clientes/importar'
+      preLoaderRoute: typeof AppClientesImportarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/clientes/$clienteId': {
       id: '/_app/clientes/$clienteId'
       path: '/clientes/$clienteId'
@@ -578,6 +597,7 @@ interface AppRouteChildren {
   AppReportesRoute: typeof AppReportesRoute
   AppUifRoute: typeof AppUifRoute
   AppClientesClienteIdRoute: typeof AppClientesClienteIdRouteWithChildren
+  AppClientesImportarRoute: typeof AppClientesImportarRoute
   AppClientesNuevoRoute: typeof AppClientesNuevoRoute
   AppExpedientesExpedienteIdRoute: typeof AppExpedientesExpedienteIdRouteWithChildren
   AppExpedientesNuevoRoute: typeof AppExpedientesNuevoRoute
@@ -599,6 +619,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppReportesRoute: AppReportesRoute,
   AppUifRoute: AppUifRoute,
   AppClientesClienteIdRoute: AppClientesClienteIdRouteWithChildren,
+  AppClientesImportarRoute: AppClientesImportarRoute,
   AppClientesNuevoRoute: AppClientesNuevoRoute,
   AppExpedientesExpedienteIdRoute: AppExpedientesExpedienteIdRouteWithChildren,
   AppExpedientesNuevoRoute: AppExpedientesNuevoRoute,
