@@ -16,12 +16,18 @@ import {
   tipoPersonaLabels,
   useDeleteCliente,
 } from '#/features/clientes'
+import { ExpedientesTable, expedientesByClienteOptions } from '#/features/expedientes'
 
 export const Route = createFileRoute('/_app/clientes/$clienteId')({
   component: ClienteDetallePage,
   errorComponent: (props) => <AppErrorBoundary {...props} feature="clientes" />,
   loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(clienteByIdOptions(params.clienteId)),
+    Promise.all([
+      context.queryClient.ensureQueryData(clienteByIdOptions(params.clienteId)),
+      context.queryClient.ensureQueryData(
+        expedientesByClienteOptions(params.clienteId),
+      ),
+    ]),
 })
 
 function DetailField({
@@ -45,6 +51,9 @@ function ClienteDetallePage() {
   const { clienteId } = Route.useParams()
   const navigate = useNavigate()
   const { data: cliente } = useSuspenseQuery(clienteByIdOptions(clienteId))
+  const { data: expedientesCliente } = useSuspenseQuery(
+    expedientesByClienteOptions(clienteId),
+  )
   const eliminar = useDeleteCliente()
 
   async function handleDelete() {
@@ -156,6 +165,15 @@ function ClienteDetallePage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Expedientes del cliente</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ExpedientesTable expedientes={expedientesCliente} />
+        </CardContent>
+      </Card>
     </div>
   )
 }

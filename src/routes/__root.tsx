@@ -1,5 +1,6 @@
 import {
   HeadContent,
+  Link,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -11,6 +12,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 import { APP_DESCRIPTION, APP_NAME } from '#/lib/config/app'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { Button } from '#/components/ui/button'
 
 import type { QueryClient } from '@tanstack/react-query'
 import type { auth } from '#/stores/auth-store'
@@ -46,7 +48,25 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 })
+
+function NotFound() {
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-4 p-8 text-center">
+      <p className="text-sm font-medium text-lagoon">Error 404</p>
+      <h1 className="text-2xl font-semibold text-sea-ink">
+        Página no encontrada
+      </h1>
+      <p className="max-w-md text-sm text-muted-foreground">
+        La página que buscas no existe o fue movida.
+      </p>
+      <Button asChild className="mt-2">
+        <Link to="/dashboard">Volver al inicio</Link>
+      </Button>
+    </div>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
