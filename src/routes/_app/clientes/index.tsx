@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { FileUp, Plus } from 'lucide-react'
 import { Card, CardContent } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
@@ -33,6 +33,12 @@ function ClientesPage() {
         title="Clientes"
         description="Personas físicas y morales registradas en la notaría"
       >
+        <Button asChild variant="outline">
+          <Link to="/clientes/importar">
+            <FileUp className="size-4" />
+            Importar historial
+          </Link>
+        </Button>
         <Button asChild>
           <Link to="/clientes/nuevo">
             <Plus className="size-4" />

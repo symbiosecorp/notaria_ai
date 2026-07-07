@@ -4,6 +4,8 @@ import { createLogger } from '#/lib/errors/logger'
 import { clienteInputSchema, clienteSchema } from '../schemas'
 import type { Cliente, ClienteInput } from '../schemas'
 
+// Fase 2 (Supabase): ver src/lib/supabase/ y supabase/migrations/ cuando conectes backend real.
+
 const logger = createLogger('clientes')
 const FEATURE = 'clientes'
 
@@ -12,7 +14,6 @@ const delay = (ms = 250) => new Promise((resolve) => setTimeout(resolve, ms))
 export async function listClientes(): Promise<Cliente[]> {
   logger.info('Listando clientes')
   await delay()
-  // Validación en el límite: garantiza que lo que sale del service cumple el schema.
   return clienteSchema.array().parse(mockDb.clientes)
 }
 
