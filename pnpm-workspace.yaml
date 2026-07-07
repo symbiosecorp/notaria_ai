@@ -1,4 +1,6 @@
 allowBuilds:
-  '@google/genai': set this to true or false
-  protobufjs: set this to true or false
-  unrs-resolver: set this to true or false
+  '@google/genai': true
+  esbuild: true
+  lightningcss: true
+  protobufjs: false
+  unrs-resolver: false

@@ -1,6 +1,8 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+Guía canónica para agentes de código IA (Claude Code, Cursor, Windsurf, Codex, …) en este
+repositorio. **Única fuente de verdad**: `CLAUDE.md` y `.cursorrules` solo apuntan aquí;
+cualquier cambio de reglas se hace en este archivo.
 
 ## Proyecto
 
@@ -11,7 +13,8 @@ léelo antes de cambios estructurales.
 
 Estado: front con datos **simulados en memoria** (sin backend). Los módulos **Clientes,
 Expedientes y Honorarios** están funcionales de extremo a extremo (lista/detalle/alta/
-edición/borrado); el resto del RFP son placeholders navegables.
+edición/borrado); el resto del RFP son placeholders navegables. Backend objetivo: Supabase
+(migración por fases; se reescriben solo los `*.service.ts`).
 
 ## Comandos
 
@@ -24,6 +27,28 @@ Package manager **pnpm**. Dev en puerto 3000.
 - `pnpm exec tsc --noEmit` — verificación de tipos
 
 **Verifica siempre** con `pnpm exec tsc --noEmit` y `pnpm lint` antes de dar por terminado.
+
+## Guardarraíles automáticos
+
+Estas reglas se verifican con herramientas; no dependen de tu memoria:
+
+- **Pre-commit (husky):** `tsc --noEmit` + `eslint` corren en cada commit. **Nunca** uses
+  `--no-verify`; si el hook falla, arregla la causa raíz.
+- **CI (GitHub Actions):** typecheck, lint, tests y build corren en cada push/PR a `main`.
+  Un PR rojo no se mergea.
+- **Límites de imports (ESLint `no-restricted-imports`):**
+  - Las features se importan **solo por su barrel** (`#/features/<modulo>`), nunca sus
+    archivos internos.
+  - Una feature **no** importa otra feature; la composición entre features ocurre en las
+    rutas. (Excepción documentada: `src/lib/api/mock-db.ts`, que muere con Supabase.)
+  - Nadie importa desde `src/routes/`.
+  - `#/lib/api/mock-db` solo es accesible desde los services (`features/*/api/`).
+- **Secretos:** valores reales solo en `.env.local` (gitignored vía `*.local`). Toda
+  variable nueva se documenta en `.env.example` **sin** valor. La `service_role` key de
+  Supabase jamás va en código cliente.
+- **Supabase MCP en modo read-only:** úsalo para consultar esquema/datos. Los cambios de
+  esquema van **siempre** en migraciones versionadas (`supabase/migrations/`, a partir de
+  la Fase 1) revisables en PR — nunca directo contra la base.
 
 ## Reglas de arquitectura (no romper)
 
