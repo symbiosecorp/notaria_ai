@@ -4,6 +4,8 @@ import { createLogger } from '#/lib/errors/logger'
 import { expedienteInputSchema, expedienteSchema } from '../schemas'
 import type { Expediente, ExpedienteInput } from '../schemas'
 
+// Fase 2 (Supabase): ver src/lib/supabase/ y supabase/migrations/ cuando conectes backend real.
+
 const logger = createLogger('expedientes')
 const FEATURE = 'expedientes'
 
@@ -19,6 +21,16 @@ export async function listExpedientes(): Promise<Expediente[]> {
   logger.info('Listando expedientes')
   await delay()
   return expedienteSchema.array().parse(mockDb.expedientes)
+}
+
+export async function listExpedientesByCliente(
+  clienteId: string,
+): Promise<Expediente[]> {
+  logger.info(`Listando expedientes del cliente ${clienteId}`)
+  await delay(150)
+  return expedienteSchema.array().parse(
+    mockDb.expedientes.filter((e) => e.clienteId === clienteId),
+  )
 }
 
 export async function getExpediente(id: string): Promise<Expediente> {

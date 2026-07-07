@@ -8,6 +8,7 @@ import {
   deleteExpediente,
   getExpediente,
   listExpedientes,
+  listExpedientesByCliente,
   updateExpediente,
 } from '../api/expedientes.service'
 import type { ExpedienteInput } from '../schemas'
@@ -22,6 +23,13 @@ export const expedientesListOptions = () =>
   queryOptions({
     queryKey: expedientesKeys.list(),
     queryFn: listExpedientes,
+  })
+
+export const expedientesByClienteOptions = (clienteId: string) =>
+  queryOptions({
+    queryKey: [...expedientesKeys.all, 'by-cliente', clienteId] as const,
+    queryFn: () => listExpedientesByCliente(clienteId),
+    enabled: Boolean(clienteId),
   })
 
 export const expedienteByIdOptions = (id: string) =>

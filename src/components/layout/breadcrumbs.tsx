@@ -1,3 +1,4 @@
+import { Fragment } from "react"
 import { Link, useLocation } from "@tanstack/react-router"
 import {
   Breadcrumb,
@@ -32,16 +33,18 @@ export function AppBreadcrumbs() {
         </BreadcrumbItem>
         {crumbs.length > 0 && <BreadcrumbSeparator />}
         {crumbs.map((crumb, index) => (
-          <BreadcrumbItem key={crumb.path}>
-            {crumb.isLast ? (
-              <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-            ) : (
-              <BreadcrumbLink asChild>
-                <Link to={crumb.path}>{crumb.label}</Link>
-              </BreadcrumbLink>
-            )}
+          <Fragment key={crumb.path}>
+            <BreadcrumbItem>
+              {crumb.isLast ? (
+                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link to={crumb.path}>{crumb.label}</Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
             {index < crumbs.length - 1 && <BreadcrumbSeparator />}
-          </BreadcrumbItem>
+          </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>
