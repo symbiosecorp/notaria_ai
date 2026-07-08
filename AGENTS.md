@@ -28,7 +28,11 @@ Package manager **pnpm**. Dev en puerto 3000.
 - `pnpm generate-routes` — regenerar `src/routeTree.gen.ts` tras agregar/quitar rutas
 - `pnpm exec tsc --noEmit` — verificación de tipos
 
-**Verifica siempre** con `pnpm exec tsc --noEmit` y `pnpm lint` antes de dar por terminado.
+**Flujo de verificación:** haz primero **todos** los cambios de la tarea; no corras
+tsc/lint/build entre cambios intermedios. Al terminar, corre **una sola batería** —
+`pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test` y, si tocaste config/rutas/deps,
+`pnpm build` — y ajusta hasta que quede verde. Commitea al final de la tarea: el
+pre-commit (husky) corre tsc + lint en cada commit y funciona como validación de cierre.
 
 ## Guardarraíles automáticos
 
@@ -36,8 +40,8 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 
 - **Pre-commit (husky):** `tsc --noEmit` + `eslint` corren en cada commit. **Nunca** uses
   `--no-verify`; si el hook falla, arregla la causa raíz.
-- **CI (GitHub Actions):** typecheck, lint, tests y build corren en cada push/PR a `main`.
-  Un PR rojo no se mergea.
+- **CI:** aún no hay GitHub Actions; la única validación automática es el pre-commit.
+  No crees workflows de CI sin que el usuario lo pida explícitamente.
 - **Límites de imports (ESLint `no-restricted-imports`):**
   - Las features se importan **solo por su barrel** (`#/features/<modulo>`), nunca sus
     archivos internos.
