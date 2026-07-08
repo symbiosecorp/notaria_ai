@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { getCookies, setCookie } from '@tanstack/react-start/server'
 import { AppError } from '#/lib/errors/app-error'
+import type { Database } from './database.types.ts'
 
 /**
  * Cliente de Supabase para server functions. La sesión viaja en cookies, por lo
@@ -18,7 +19,7 @@ export function getSupabaseServerClient() {
     )
   }
 
-  return createServerClient(url, key, {
+  return createServerClient<Database>(url, key, {
     cookies: {
       getAll() {
         return Object.entries(getCookies()).map(([name, value]) => ({
