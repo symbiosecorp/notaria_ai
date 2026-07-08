@@ -5,6 +5,7 @@ import { PageHeader } from '#/components/common/page-header'
 import { ModulePlaceholder } from '#/components/common/module-placeholder'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs.tsx'
 import { AppErrorBoundary } from '#/lib/errors/error-boundary'
+import { requirePermission } from '#/lib/auth/guard.ts'
 import { usuariosListOptions, UsuariosPanel } from '#/features/usuarios'
 
 const searchSchema = z.object({
@@ -21,6 +22,9 @@ export const Route = createFileRoute('/_app/configuracion')({
   errorComponent: (props) => (
     <AppErrorBoundary {...props} feature="configuracion" />
   ),
+  beforeLoad: ({ context }) => {
+    requirePermission(context.user, 'configuracion:view')
+  },
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(usuariosListOptions()),
 })

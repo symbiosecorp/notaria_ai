@@ -22,6 +22,11 @@ const mockDbImport = {
   regex: '^[#@]/lib/api/mock-db.*',
   message: 'Solo los services (features/*/api) acceden a mock-db.',
 }
+const supabaseAdminImport = {
+  regex: '^[#@]/integrations/supabase/admin.*',
+  message:
+    'El cliente admin (service_role) solo se usa en *-api.ts o repositorios Supabase del servidor.',
+}
 
 export default [
   ...tanstackConfig,
@@ -40,7 +45,7 @@ export default [
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [featureInternals, routesImport, mockDbImport] },
+        { patterns: [featureInternals, routesImport, mockDbImport, supabaseAdminImport] },
       ],
     },
   },
@@ -49,13 +54,27 @@ export default [
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [crossFeature, routesImport, mockDbImport] },
+        { patterns: [crossFeature, routesImport, mockDbImport, supabaseAdminImport] },
       ],
     },
   },
   {
     // Los services son la única capa con acceso a mock-db
     files: ['src/features/*/api/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [crossFeature, routesImport, supabaseAdminImport] },
+      ],
+    },
+  },
+  {
+    // Server functions y repos Supabase pueden usar el cliente admin
+    files: [
+      'src/features/*/api/**/*-api.ts',
+      'src/features/*/api/**/*.repository.supabase.ts',
+      'src/lib/auth/api.ts',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',

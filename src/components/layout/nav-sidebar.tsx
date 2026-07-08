@@ -15,6 +15,9 @@ import {
 } from "#/components/ui/sidebar"
 import { APP_NAME } from "#/lib/config/app"
 import { moduleGroups, modules } from "#/lib/config/modules"
+import { useAuth } from "#/lib/auth/auth-context"
+import { hasPermission } from "#/lib/auth/permissions.ts"
+import type { Permission } from "#/lib/auth/permissions.ts"
 import { UserMenu } from "./user-menu"
 import { ScrollArea } from "#/components/ui/scroll-area"
 
@@ -49,6 +52,9 @@ function SidebarLink({
 }
 
 export function NavSidebar() {
+  const { user } = useAuth()
+  const role = user?.role
+
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader className="border-b border-sidebar-border p-4">
@@ -64,7 +70,12 @@ export function NavSidebar() {
       <SidebarContent>
         <ScrollArea className="h-full">
           {moduleGroups.map((group) => {
-            const groupModules = modules.filter((m) => m.group === group.id)
+            const groupModules = modules.filter(
+              (m) =>
+                m.group === group.id &&
+                role &&
+                hasPermission(role, m.permission as Permission),
+            )
             if (groupModules.length === 0) return null
             return (
               <SidebarGroup key={group.id}>
