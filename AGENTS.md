@@ -12,11 +12,12 @@ jurídico/notarial, UI en **español**. Especificación funcional en `docs/RFP.m
 léelo antes de cambios estructurales.
 
 Estado: **auth real con Supabase** (email+password, sesión en cookies vía `@supabase/ssr`,
-tabla `profiles` con roles y RLS; ver `src/lib/auth/` y `supabase/migrations/`). Los datos
-de negocio siguen **simulados en memoria**: los módulos **Clientes, Expedientes y
-Honorarios** son funcionales de extremo a extremo contra mockDb; el resto del RFP son
-placeholders navegables. Migración a Supabase por fases: se reescriben solo los
-`*.service.ts`.
+tabla `profiles` con roles y RLS; ver `src/lib/auth/` y `supabase/migrations/`). **Usuarios**
+(administración de cuentas) usa server functions + Supabase Admin cuando
+`SUPABASE_SERVICE_ROLE_KEY` está configurada; si no, cae en mock en servidor. Los demás
+datos de negocio siguen **simulados en memoria**: **Clientes, Expedientes y Honorarios** son
+funcionales de extremo a extremo contra mockDb. Migración a Supabase por fases: reescribir
+`*.service.ts` + añadir `*-api.ts` / repositorios (ver sección *Conexión front ↔ backend*).
 
 ## Comandos
 
@@ -65,8 +66,9 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 2. **Las rutas son cableado fino.** En `src/routes/` no metas lógica de negocio; solo
    orquesta componentes y hooks de las features.
 3. **Flujo de datos en una sola dirección:**
-   `componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real`.
-   Para migrar a backend real se reescribe **solo** el `*.service.ts`.
+   `componente → hook (TanStack Query) → service (*.service.ts) → server fn (*-api.ts) → mock / Supabase`.
+   Para migrar a backend real se reescribe la capa `api/` del feature (service + server +
+   repositorios); hooks, componentes y rutas no cambian.
 4. **Schema-first con Zod.** Cada entidad define su schema en `schemas.ts` y el tipo se
    infiere con `z.infer`. Los services validan en el límite con `schema.parse(...)`.
 5. **Registro de módulos.** Para que un módulo aparezca en el sidebar/breadcrumbs,
@@ -111,6 +113,26 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 - **Errores/logging:** lanza `AppError` (`#/lib/errors/app-error`) tipado por feature y usa
   `createLogger('<feature>')` (`#/lib/errors/logger`).
 - **Formato:** `formatDate` / `formatCurrency` de `#/lib/format`.
+
+## Conexión front ↔ backend
+
+Patrón canónico (TanStack Start + Supabase):
+
+```
+componente → hook (Query) → *.service.ts → *-api.ts → Supabase / mock (servidor)
+```
+
+1. **`*.service.ts`:** capa delgada que invoca `createServerFn` del feature.
+2. **`*-api.ts`:** `requireServerAuth` / `requireServerPermission`, lógica de negocio,
+   errores con `#/lib/api/server-errors.ts`.
+3. **Sesión del usuario:** `getSupabaseServerClient()` + cookies (`src/lib/auth/`).
+4. **Operaciones admin:** `SUPABASE_SERVICE_ROLE_KEY` (sin `VITE_`) +
+   `getSupabaseAdminClient()` — solo servidor; ESLint bloquea imports en cliente.
+5. **Migración por fases:** `*.repository.mock.ts` + `*.repository.supabase.ts`;
+   el server function elige con `isSupabaseAdminConfigured()`.
+6. **Esquema:** migraciones en `supabase/migrations/`; regenerar `database.types.ts`.
+
+Referencia: `src/features/usuarios/api/`.
 
 ## Cómo agregar un módulo
 

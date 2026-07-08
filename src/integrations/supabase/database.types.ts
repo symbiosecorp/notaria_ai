@@ -42,6 +42,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          estatus: Database["public"]["Enums"]["profile_status"]
           id: string
           nombre: string
           rol: Database["public"]["Enums"]["user_role"]
@@ -49,6 +50,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          estatus?: Database["public"]["Enums"]["profile_status"]
           id: string
           nombre?: string
           rol?: Database["public"]["Enums"]["user_role"]
@@ -56,6 +58,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          estatus?: Database["public"]["Enums"]["profile_status"]
           id?: string
           nombre?: string
           rol?: Database["public"]["Enums"]["user_role"]
@@ -71,6 +74,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      profile_status: "activo" | "inactivo" | "pendiente"
       user_role:
         | "admin"
         | "notario"
@@ -208,6 +212,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      profile_status: ["activo", "inactivo", "pendiente"],
       user_role: [
         "admin",
         "notario",

@@ -6,7 +6,8 @@ const logger = createLogger('template')
 const FEATURE = 'template'
 
 // Almacén en memoria de ejemplo. Al clonar la plantilla, reemplázalo por una
-// colección en `src/lib/api/mock-db.ts` (o por llamadas `fetch` a la API real).
+// colección en `src/lib/api/mock-db.ts` hasta migrar; luego delega en
+// `template-api.ts` (ver `src/features/usuarios/api/` como referencia).
 const store: Template[] = []
 
 export async function listTemplates(): Promise<Template[]> {

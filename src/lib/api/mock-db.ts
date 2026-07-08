@@ -16,17 +16,86 @@ import {
 } from '#/features/honorarios/schemas'
 import type { Cotizacion } from '#/features/honorarios/schemas'
 import { calcularArancel } from '#/features/honorarios/api/arancel'
+import { ROLES } from '#/lib/auth/permissions.ts'
+import type { Usuario } from '#/features/usuarios/schemas.ts'
 
 export interface MockDb {
   clientes: Cliente[]
   expedientes: Expediente[]
   cotizaciones: Cotizacion[]
+  usuarios: Usuario[]
 }
 
 export const mockDb: MockDb = {
   clientes: [],
   expedientes: [],
   cotizaciones: [],
+  usuarios: [],
+}
+
+function seedUsuarios(): Usuario[] {
+  const now = new Date()
+  return [
+    {
+      id: 'usr-admin-001',
+      email: 'admin@notariaia.mx',
+      nombre: 'Lic. Isaí Gracida Melo',
+      rol: ROLES.ADMIN,
+      estatus: 'activo',
+      createdAt: new Date('2025-06-01'),
+      updatedAt: now,
+      lastLoginAt: new Date(now.getTime() - 1000 * 60 * 45),
+    },
+    {
+      id: 'usr-notario-001',
+      email: 'notario@notariaia.mx',
+      nombre: 'Lic. Ana Patricia Ruiz',
+      rol: ROLES.NOTARIO,
+      estatus: 'activo',
+      createdAt: new Date('2025-07-15'),
+      updatedAt: now,
+      lastLoginAt: new Date(now.getTime() - 1000 * 60 * 60 * 5),
+    },
+    {
+      id: 'usr-abogado-001',
+      email: 'abogado@notariaia.mx',
+      nombre: 'Lic. Carlos Mendoza Vega',
+      rol: ROLES.ABOGADO,
+      estatus: 'activo',
+      createdAt: new Date('2025-09-01'),
+      updatedAt: now,
+      lastLoginAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
+    },
+    {
+      id: 'usr-asistente-001',
+      email: 'asistente@notariaia.mx',
+      nombre: 'María Fernanda López',
+      rol: ROLES.ASISTENTE,
+      estatus: 'activo',
+      createdAt: new Date('2025-10-10'),
+      updatedAt: now,
+      lastLoginAt: new Date(now.getTime() - 1000 * 60 * 60 * 48),
+    },
+    {
+      id: 'usr-contador-001',
+      email: 'contador@notariaia.mx',
+      nombre: 'C.P. Roberto Sánchez',
+      rol: ROLES.CONTADOR,
+      estatus: 'activo',
+      createdAt: new Date('2025-11-20'),
+      updatedAt: now,
+      lastLoginAt: new Date(now.getTime() - 1000 * 60 * 60 * 72),
+    },
+    {
+      id: 'usr-asistente-002',
+      email: 'recepcion@notariaia.mx',
+      nombre: 'Laura Edith Morales',
+      rol: ROLES.ASISTENTE,
+      estatus: 'pendiente',
+      createdAt: new Date('2026-03-01'),
+      updatedAt: now,
+    },
+  ]
 }
 
 function generateCliente(): Cliente {
@@ -143,6 +212,7 @@ export function seedMockDb() {
   mockDb.cotizaciones = Array.from({ length: 14 }, (_, i) =>
     generateCotizacion(i, mockDb.clientes),
   )
+  mockDb.usuarios = seedUsuarios()
   seeded = true
 }
 
@@ -150,6 +220,7 @@ export function resetMockDb() {
   mockDb.clientes = []
   mockDb.expedientes = []
   mockDb.cotizaciones = []
+  mockDb.usuarios = []
   seeded = false
 }
 
