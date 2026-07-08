@@ -102,6 +102,12 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 - **Rutas de un módulo:** `index.tsx` (lista), `$id.tsx` (detalle), `nuevo.tsx`,
   `$id.editar.tsx`. Los loaders usan `context.queryClient.ensureQueryData(...)`. Monta
   `errorComponent: (props) => <AppErrorBoundary {...props} feature="<modulo>" />`.
+- **Estado de cliente — elige la herramienta por tipo de estado:** datos de servidor →
+  TanStack Query; formularios → TanStack Form; filtros/búsqueda/paginación de listas →
+  search params de la URL (`validateSearch` con schema Zod en la ruta); estado global de
+  UI → stores **zustand** en `src/stores/` (ej. `ui-store.ts`; consúmelos con selectores:
+  `useUiStore((s) => s.theme)`); estado efímero de un solo componente → `useState`.
+  No introduzcas otra librería de estado.
 - **Errores/logging:** lanza `AppError` (`#/lib/errors/app-error`) tipado por feature y usa
   `createLogger('<feature>')` (`#/lib/errors/logger`).
 - **Formato:** `formatDate` / `formatCurrency` de `#/lib/format`.
@@ -115,7 +121,7 @@ los componentes, regístralo en `src/lib/config/modules.ts`, crea las rutas en
 
 ## Stack (referencia)
 
-TanStack Start (React 19, SSR, file-based routing) · TanStack Query/Store/Form · Zod 4 ·
+TanStack Start (React 19, SSR, file-based routing) · TanStack Query/Form · zustand · Zod 4 ·
 shadcn/ui + Tailwind v4 · Vite 8 · TypeScript 6 (strict) · pnpm.
 Adaptadores de IA disponibles (`@tanstack/ai-*`: Anthropic/OpenAI/Gemini/Ollama); aún sin
 integrar — al usarlos, ponlos detrás de la capa de services como el resto.

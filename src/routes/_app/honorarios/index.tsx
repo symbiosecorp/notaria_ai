@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { z } from 'zod'
 import { Plus } from 'lucide-react'
 import { Card, CardContent } from '#/components/ui/card'
 import { Button } from '#/components/ui/button'
@@ -11,15 +11,22 @@ import {
   CotizacionesTable,
 } from '#/features/honorarios'
 
+const searchSchema = z.object({
+  q: z.string().optional().catch(undefined),
+})
+
 export const Route = createFileRoute('/_app/honorarios/')({
   component: HonorariosPage,
+  validateSearch: searchSchema,
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(cotizacionesListOptions()),
 })
 
 function HonorariosPage() {
   const { data } = useSuspenseQuery(cotizacionesListOptions())
-  const [search, setSearch] = useState('')
+  const { q } = Route.useSearch()
+  const navigate = Route.useNavigate()
+  const search = q ?? ''
 
   const term = search.trim().toLowerCase()
   const filtered = term
@@ -49,7 +56,12 @@ function HonorariosPage() {
           <Input
             placeholder="Buscar por folio, concepto o cliente…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>
+              navigate({
+                search: { q: e.target.value || undefined },
+                replace: true,
+              })
+            }
             className="max-w-sm"
           />
           <CotizacionesTable cotizaciones={filtered} />

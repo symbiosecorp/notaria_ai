@@ -2,9 +2,8 @@ import { PanelLeft, Sun, Moon, Monitor } from "lucide-react"
 import { Button } from "#/components/ui/button"
 import { SidebarTrigger } from "#/components/ui/sidebar"
 import { AppBreadcrumbs } from "./breadcrumbs"
-import { uiStore, setTheme  } from "#/stores/ui-store"
+import { useUiStore } from "#/stores/ui-store"
 import type {Theme} from "#/stores/ui-store";
-import { useStore } from "@tanstack/react-store"
 
 const themeOptions: { value: Theme; icon: React.ReactNode; label: string }[] = [
   { value: "light", icon: <Sun className="size-4" />, label: "Claro" },
@@ -13,7 +12,8 @@ const themeOptions: { value: Theme; icon: React.ReactNode; label: string }[] = [
 ]
 
 export function Topbar() {
-  const theme = useStore(uiStore, (state) => state.theme)
+  const theme = useUiStore((state) => state.theme)
+  const setTheme = useUiStore((state) => state.setTheme)
 
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-header-bg/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-header-bg/60">
