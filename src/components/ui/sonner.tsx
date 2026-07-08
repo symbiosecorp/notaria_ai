@@ -7,11 +7,10 @@ import {
 } from "lucide-react"
 import { Toaster as Sonner  } from "sonner"
 import type {ToasterProps} from "sonner";
-import { useStore } from "@tanstack/react-store"
-import { uiStore } from "#/stores/ui-store"
+import { useUiStore } from "#/stores/ui-store"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const theme = useStore(uiStore, (state) => state.theme)
+  const theme = useUiStore((state) => state.theme)
 
   return (
     <Sonner

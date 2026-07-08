@@ -3,7 +3,6 @@ import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar"
 import { NavSidebar } from "./nav-sidebar"
 import { Topbar } from "./topbar"
 import { initializeTheme } from "#/stores/ui-store"
-import { Toaster } from "#/components/ui/sonner"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -19,7 +18,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="page-wrap">{children}</div>
         </main>
       </SidebarInset>
-      <Toaster position="bottom-right" />
     </SidebarProvider>
   )
 }
