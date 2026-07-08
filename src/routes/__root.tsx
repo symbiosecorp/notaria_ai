@@ -12,6 +12,7 @@ import appCss from '../styles.css?url'
 import { APP_DESCRIPTION, APP_NAME } from '#/lib/config/app'
 import { sessionQueryOptions } from '#/lib/auth/session.ts'
 import { TooltipProvider } from '#/components/ui/tooltip'
+import { Toaster } from '#/components/ui/sonner'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -65,6 +66,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <TooltipProvider delayDuration={0}>
           {children}
         </TooltipProvider>
+        <Toaster position="bottom-right" />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

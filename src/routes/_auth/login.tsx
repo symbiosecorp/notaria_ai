@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
@@ -28,24 +27,28 @@ function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: (input: LoginInput) => login(input),
     onSuccess: async (result) => {
-      if (!result.ok) {
-        toast.error(result.message)
-        return
+      if (result.ok) {
+        await navigate({ to: '/dashboard' })
       }
-      await navigate({ to: '/dashboard' })
-    },
-    onError: () => {
-      toast.error('No se pudo iniciar sesión. Inténtalo de nuevo.')
     },
   })
 
   const form = useForm({
     defaultValues: emptyValues,
     validators: { onSubmit: loginInputSchema },
-    onSubmit: async ({ value }) => {
-      await loginMutation.mutateAsync(loginInputSchema.parse(value))
+    onSubmit: ({ value }) => {
+      loginMutation.mutate(loginInputSchema.parse(value))
     },
   })
+
+  // Error de credenciales (result.ok === false) o falla inesperada (throw).
+  const errorMessage = loginMutation.isPending
+    ? null
+    : loginMutation.data && !loginMutation.data.ok
+      ? loginMutation.data.message
+      : loginMutation.isError
+        ? 'No se pudo iniciar sesión. Inténtalo de nuevo.'
+        : null
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,6 +104,14 @@ function LoginPage() {
                   </Field>
                 )}
               </form.Field>
+              {errorMessage ? (
+                <div
+                  role="alert"
+                  className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                >
+                  {errorMessage}
+                </div>
+              ) : null}
               <Button type="submit" disabled={loginMutation.isPending}>
                 {loginMutation.isPending ? 'Entrando...' : 'Iniciar sesión'}
               </Button>
