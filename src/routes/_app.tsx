@@ -5,7 +5,7 @@ import { requireAuth } from '#/lib/auth/guard'
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
   beforeLoad: ({ context }) => {
-    requireAuth(context.auth)
+    requireAuth(context.user)
   },
 })
 

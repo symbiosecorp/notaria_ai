@@ -72,6 +72,12 @@ export default [
     },
   },
   {
-    ignores: ['eslint.config.js', 'prettier.config.js', 'src/routeTree.gen.ts'],
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      'src/routeTree.gen.ts',
+      // Autogenerado con `supabase gen types typescript --linked`
+      'src/integrations/supabase/database.types.ts',
+    ],
   },
 ]
