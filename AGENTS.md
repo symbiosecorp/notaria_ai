@@ -11,10 +11,12 @@ jurídico/notarial, UI en **español**. Especificación funcional en `docs/RFP.m
 **arquitectura detallada y cómo agregar un módulo** están en `docs/ARCHITECTURE.md` —
 léelo antes de cambios estructurales.
 
-Estado: front con datos **simulados en memoria** (sin backend). Los módulos **Clientes,
-Expedientes y Honorarios** están funcionales de extremo a extremo (lista/detalle/alta/
-edición/borrado); el resto del RFP son placeholders navegables. Backend objetivo: Supabase
-(migración por fases; se reescriben solo los `*.service.ts`).
+Estado: **auth real con Supabase** (email+password, sesión en cookies vía `@supabase/ssr`,
+tabla `profiles` con roles y RLS; ver `src/lib/auth/` y `supabase/migrations/`). Los datos
+de negocio siguen **simulados en memoria**: los módulos **Clientes, Expedientes y
+Honorarios** son funcionales de extremo a extremo contra mockDb; el resto del RFP son
+placeholders navegables. Migración a Supabase por fases: se reescriben solo los
+`*.service.ts`.
 
 ## Comandos
 
@@ -26,7 +28,11 @@ Package manager **pnpm**. Dev en puerto 3000.
 - `pnpm generate-routes` — regenerar `src/routeTree.gen.ts` tras agregar/quitar rutas
 - `pnpm exec tsc --noEmit` — verificación de tipos
 
-**Verifica siempre** con `pnpm exec tsc --noEmit` y `pnpm lint` antes de dar por terminado.
+**Flujo de verificación:** haz primero **todos** los cambios de la tarea; no corras
+tsc/lint/build entre cambios intermedios. Al terminar, corre **una sola batería** —
+`pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test` y, si tocaste config/rutas/deps,
+`pnpm build` — y ajusta hasta que quede verde. Commitea al final de la tarea: el
+pre-commit (husky) corre tsc + lint en cada commit y funciona como validación de cierre.
 
 ## Guardarraíles automáticos
 
@@ -34,8 +40,8 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 
 - **Pre-commit (husky):** `tsc --noEmit` + `eslint` corren en cada commit. **Nunca** uses
   `--no-verify`; si el hook falla, arregla la causa raíz.
-- **CI (GitHub Actions):** typecheck, lint, tests y build corren en cada push/PR a `main`.
-  Un PR rojo no se mergea.
+- **CI:** aún no hay GitHub Actions; la única validación automática es el pre-commit.
+  No crees workflows de CI sin que el usuario lo pida explícitamente.
 - **Límites de imports (ESLint `no-restricted-imports`):**
   - Las features se importan **solo por su barrel** (`#/features/<modulo>`), nunca sus
     archivos internos.
@@ -47,8 +53,9 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
   variable nueva se documenta en `.env.example` **sin** valor. La `service_role` key de
   Supabase jamás va en código cliente.
 - **Supabase MCP en modo read-only:** úsalo para consultar esquema/datos. Los cambios de
-  esquema van **siempre** en migraciones versionadas (`supabase/migrations/`, a partir de
-  la Fase 1) revisables en PR — nunca directo contra la base.
+  esquema van **siempre** en migraciones versionadas en `supabase/migrations/` (CLI:
+  `pnpm exec supabase ...`; aplicar con `db push`) revisables en PR — nunca directo contra
+  la base.
 
 ## Reglas de arquitectura (no romper)
 

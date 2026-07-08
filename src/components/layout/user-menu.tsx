@@ -1,5 +1,5 @@
 import { LogOut, User } from "lucide-react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { Avatar, AvatarFallback } from "#/components/ui/avatar"
 import { Button } from "#/components/ui/button"
 import {
@@ -15,7 +15,6 @@ import { useSidebar } from "#/components/ui/sidebar"
 
 export function UserMenu() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const { isMobile } = useSidebar()
 
   if (!user) return null
@@ -27,9 +26,9 @@ export function UserMenu() {
     .slice(0, 2)
     .toUpperCase()
 
+  // logout limpia la sesión (cookies + caché) y navega a /login por sí mismo.
   const handleLogout = () => {
-    logout()
-    navigate({ to: "/login" })
+    void logout()
   }
 
   return (

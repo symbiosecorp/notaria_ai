@@ -1,26 +1,23 @@
 import { redirect } from '@tanstack/react-router'
-import { AppError } from '#/lib/errors/app-error'
-import { hasPermission } from './permissions'
-import type { Permission } from './permissions'
-import type { auth } from '#/stores/auth-store'
+import { AppError } from '#/lib/errors/app-error.ts'
+import { hasPermission } from './permissions.ts'
+import type { Permission } from './permissions.ts'
+import type { User } from './types.ts'
 
-type AuthAccessor = typeof auth
-
-// La sesión mock vive solo en el cliente, por lo que en SSR no es legible y el
-// cliente es la autoridad. Con auth real (cookies) la verificación debería
-// ejecutarse también en el servidor.
-export function requireAuth(authCtx: AuthAccessor) {
-  if (typeof window === 'undefined') return
-  if (!authCtx.user) {
+// La sesión vive en cookies, así que los guards corren igual en servidor y
+// cliente: sin sesión, el redirect a /login sucede ya desde el SSR.
+export function requireAuth(user: User | null | undefined): asserts user is User {
+  if (!user) {
     throw redirect({ to: '/login' })
   }
 }
 
-export function requirePermission(authCtx: AuthAccessor, permission: Permission) {
-  requireAuth(authCtx)
-  if (typeof window === 'undefined') return
-  const user = authCtx.user
-  if (!user || !hasPermission(user.role, permission)) {
+export function requirePermission(
+  user: User | null | undefined,
+  permission: Permission,
+): asserts user is User {
+  requireAuth(user)
+  if (!hasPermission(user.role, permission)) {
     throw new AppError(
       'AUTH_FORBIDDEN',
       'No tienes permiso para acceder a este módulo.',
