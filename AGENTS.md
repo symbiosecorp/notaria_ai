@@ -11,10 +11,13 @@ jurídico/notarial, UI en **español**. Especificación funcional en `docs/RFP.m
 **arquitectura detallada y cómo agregar un módulo** están en `docs/ARCHITECTURE.md` —
 léelo antes de cambios estructurales.
 
-Estado: front con datos **simulados en memoria** (sin backend). Los módulos **Clientes,
-Expedientes y Honorarios** están funcionales de extremo a extremo (lista/detalle/alta/
-edición/borrado); el resto del RFP son placeholders navegables. Backend objetivo: Supabase
-(migración por fases; se reescriben solo los `*.service.ts`).
+Estado: **auth real con Supabase** (email+password, sesión en cookies vía `@supabase/ssr`,
+tabla `profiles` con roles y RLS; ver `src/lib/auth/` y `supabase/migrations/`). **Usuarios**
+(administración de cuentas) usa server functions + Supabase Admin cuando
+`SUPABASE_SERVICE_ROLE_KEY` está configurada; si no, cae en mock en servidor. Los demás
+datos de negocio siguen **simulados en memoria**: **Clientes, Expedientes y Honorarios** son
+funcionales de extremo a extremo contra mockDb. Migración a Supabase por fases: reescribir
+`*.service.ts` + añadir `*-api.ts` / repositorios (ver sección *Conexión front ↔ backend*).
 
 ## Comandos
 
@@ -26,7 +29,11 @@ Package manager **pnpm**. Dev en puerto 3000.
 - `pnpm generate-routes` — regenerar `src/routeTree.gen.ts` tras agregar/quitar rutas
 - `pnpm exec tsc --noEmit` — verificación de tipos
 
-**Verifica siempre** con `pnpm exec tsc --noEmit` y `pnpm lint` antes de dar por terminado.
+**Flujo de verificación:** haz primero **todos** los cambios de la tarea; no corras
+tsc/lint/build entre cambios intermedios. Al terminar, corre **una sola batería** —
+`pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test` y, si tocaste config/rutas/deps,
+`pnpm build` — y ajusta hasta que quede verde. Commitea al final de la tarea: el
+pre-commit (husky) corre tsc + lint en cada commit y funciona como validación de cierre.
 
 ## Guardarraíles automáticos
 
@@ -34,8 +41,8 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 
 - **Pre-commit (husky):** `tsc --noEmit` + `eslint` corren en cada commit. **Nunca** uses
   `--no-verify`; si el hook falla, arregla la causa raíz.
-- **CI (GitHub Actions):** typecheck, lint, tests y build corren en cada push/PR a `main`.
-  Un PR rojo no se mergea.
+- **CI:** aún no hay GitHub Actions; la única validación automática es el pre-commit.
+  No crees workflows de CI sin que el usuario lo pida explícitamente.
 - **Límites de imports (ESLint `no-restricted-imports`):**
   - Las features se importan **solo por su barrel** (`#/features/<modulo>`), nunca sus
     archivos internos.
@@ -47,8 +54,9 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
   variable nueva se documenta en `.env.example` **sin** valor. La `service_role` key de
   Supabase jamás va en código cliente.
 - **Supabase MCP en modo read-only:** úsalo para consultar esquema/datos. Los cambios de
-  esquema van **siempre** en migraciones versionadas (`supabase/migrations/`, a partir de
-  la Fase 1) revisables en PR — nunca directo contra la base.
+  esquema van **siempre** en migraciones versionadas en `supabase/migrations/` (CLI:
+  `pnpm exec supabase ...`; aplicar con `db push`) revisables en PR — nunca directo contra
+  la base.
 
 ## Reglas de arquitectura (no romper)
 
@@ -58,8 +66,9 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 2. **Las rutas son cableado fino.** En `src/routes/` no metas lógica de negocio; solo
    orquesta componentes y hooks de las features.
 3. **Flujo de datos en una sola dirección:**
-   `componente → hook (TanStack Query) → service (*.service.ts) → mock-db / API real`.
-   Para migrar a backend real se reescribe **solo** el `*.service.ts`.
+   `componente → hook (TanStack Query) → service (*.service.ts) → server fn (*-api.ts) → mock / Supabase`.
+   Para migrar a backend real se reescribe la capa `api/` del feature (service + server +
+   repositorios); hooks, componentes y rutas no cambian.
 4. **Schema-first con Zod.** Cada entidad define su schema en `schemas.ts` y el tipo se
    infiere con `z.infer`. Los services validan en el límite con `schema.parse(...)`.
 5. **Registro de módulos.** Para que un módulo aparezca en el sidebar/breadcrumbs,
@@ -95,9 +104,35 @@ Estas reglas se verifican con herramientas; no dependen de tu memoria:
 - **Rutas de un módulo:** `index.tsx` (lista), `$id.tsx` (detalle), `nuevo.tsx`,
   `$id.editar.tsx`. Los loaders usan `context.queryClient.ensureQueryData(...)`. Monta
   `errorComponent: (props) => <AppErrorBoundary {...props} feature="<modulo>" />`.
+- **Estado de cliente — elige la herramienta por tipo de estado:** datos de servidor →
+  TanStack Query; formularios → TanStack Form; filtros/búsqueda/paginación de listas →
+  search params de la URL (`validateSearch` con schema Zod en la ruta); estado global de
+  UI → stores **zustand** en `src/stores/` (ej. `ui-store.ts`; consúmelos con selectores:
+  `useUiStore((s) => s.theme)`); estado efímero de un solo componente → `useState`.
+  No introduzcas otra librería de estado.
 - **Errores/logging:** lanza `AppError` (`#/lib/errors/app-error`) tipado por feature y usa
   `createLogger('<feature>')` (`#/lib/errors/logger`).
 - **Formato:** `formatDate` / `formatCurrency` de `#/lib/format`.
+
+## Conexión front ↔ backend
+
+Patrón canónico (TanStack Start + Supabase):
+
+```
+componente → hook (Query) → *.service.ts → *-api.ts → Supabase / mock (servidor)
+```
+
+1. **`*.service.ts`:** capa delgada que invoca `createServerFn` del feature.
+2. **`*-api.ts`:** `requireServerAuth` / `requireServerPermission`, lógica de negocio,
+   errores con `#/lib/api/server-errors.ts`.
+3. **Sesión del usuario:** `getSupabaseServerClient()` + cookies (`src/lib/auth/`).
+4. **Operaciones admin:** `SUPABASE_SERVICE_ROLE_KEY` (sin `VITE_`) +
+   `getSupabaseAdminClient()` — solo servidor; ESLint bloquea imports en cliente.
+5. **Migración por fases:** `*.repository.mock.ts` + `*.repository.supabase.ts`;
+   el server function elige con `isSupabaseAdminConfigured()`.
+6. **Esquema:** migraciones en `supabase/migrations/`; regenerar `database.types.ts`.
+
+Referencia: `src/features/usuarios/api/`.
 
 ## Cómo agregar un módulo
 
@@ -108,7 +143,7 @@ los componentes, regístralo en `src/lib/config/modules.ts`, crea las rutas en
 
 ## Stack (referencia)
 
-TanStack Start (React 19, SSR, file-based routing) · TanStack Query/Store/Form · Zod 4 ·
+TanStack Start (React 19, SSR, file-based routing) · TanStack Query/Form · zustand · Zod 4 ·
 shadcn/ui + Tailwind v4 · Vite 8 · TypeScript 6 (strict) · pnpm.
 Adaptadores de IA disponibles (`@tanstack/ai-*`: Anthropic/OpenAI/Gemini/Ollama); aún sin
 integrar — al usarlos, ponlos detrás de la capa de services como el resto.

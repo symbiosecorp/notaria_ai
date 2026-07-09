@@ -1,21 +1,19 @@
-import { Store } from '@tanstack/react-store'
+import { create } from 'zustand'
 
 export type Theme = 'light' | 'dark' | 'system'
 
-export interface UiState {
+interface UiState {
   theme: Theme
+  setTheme: (theme: Theme) => void
 }
 
-const initialState: UiState = {
+export const useUiStore = create<UiState>()((set) => ({
   theme: 'system',
-}
-
-export const uiStore = new Store<UiState>(initialState)
-
-export function setTheme(theme: Theme) {
-  uiStore.setState((state) => ({ ...state, theme }))
-  applyTheme(theme)
-}
+  setTheme: (theme) => {
+    set({ theme })
+    applyTheme(theme)
+  },
+}))
 
 export function applyTheme(theme: Theme) {
   const root = document.documentElement
@@ -29,9 +27,8 @@ export function applyTheme(theme: Theme) {
 }
 
 export function initializeTheme() {
-  const theme = uiStore.state.theme
-  applyTheme(theme)
+  applyTheme(useUiStore.getState().theme)
   window
     .matchMedia('(prefers-color-scheme: dark)')
-    .addEventListener('change', () => applyTheme(uiStore.state.theme))
+    .addEventListener('change', () => applyTheme(useUiStore.getState().theme))
 }
